@@ -9,6 +9,7 @@
 \usepackage{tabularx}
 \usepackage{tikz}
 \usepackage{ulem}
+\usepackage{url}
 \usetikzlibrary{shapes,arrows}
 \usepackage[title]{appendix}
 
@@ -776,6 +777,105 @@ Intel e AMD supportano solo un livello di virtualizzazione. Per ulteriori livell
 \subsection{Lightweight Virtualization}
 PACCHETTO B05\\ \\
 
+\paragraph{Paravirtualization}
+La Full Virtualization richiede che sia virtualizzata l'intera architettura, l'hardware virtuale è esposto alla VM dove il OS gira \textbf{immutato}. Le istruzioni del Guest OS che non possono essere eseguite direttamente vengono emulate dalla VMM, quindi senza il supporto hardware l'emulazione viene eseguita ogni volta che si presentano questo tipo di istruzioni portando anche a un overhead significativo.\\
+Un approccio alternativo alla Full Virtualization, prima che nascesse il supporto hardware, è la paravitualization. Abbiamo sempre la VMM ma l'hypervisor è implementato partendo dalla assunzione che il \underline{guest OS può essere modificato ed è a conoscenza del fatto di}\\ \underline{star girando all'interno di una VM}. Le modifiche del Guest OS sono limitate solitamente al kernel. Una parte delle funzioni che prima erano implementate dall'hypervisor ora sono state spostate al Guest OS in modo da poter aumentare la performance.\\
+Lo scopo è quello di introdurre delle modifiche al Guest OS in modo che si possa impedire al OS di eseguire istruzioni che non possono essere eseguite direttamente (Esempio I/O instructions). Queste istruzioni vengono sostituite con delle chiamate a delle API specifiche esposte dal VMM attraverso una interfaccia chiamata Virtualization Layer. Il VMM è responsabile dell'implementazione di queste funzioni, come creare una rappresentazione virtuale dell'hardware e infine gestire l'hardware reale.\\
+Quindi in questa architettura abbiamo ancora un VMM che ha il controllo sul sistema hardware ma espone una interfaccia attraverso la quale il Guest OS potrà interagirci e implementare alcune priviledge instrunctions.\\
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{img/Virt_tech/17.png}
+\caption{Paravirtualization Architecture}
+\end{figure}
+L'emulazione viene evitata andando a modificare il Guest OS e andando a invocare le "Hypercalls", funzioni esposte dal VMM che vanno a sostituire le istruzioni non virtualizzabili. Il codice delle Hypercalls e il VMM vengono eseguiti in system mode, quindi possono andare ad eseguire istruzioni privilegiate e interagire direettamente con l'hardware. Questo permette di ridurre l'overhead dato che non ci saranno i context switch (sono eseguiti in system mode).
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{img/Virt_tech/18.png}
+\caption{Paravirtualization Implementation}
+\end{figure}
+Pro della Paravitualizzazione:
+\begin{itemize}
+    \item Non essendoci più uno context switch frequente da OS Guest a Hypervisor (evitando anche l'emulazione) la virtualizzazione ha avuto un significativo aumento nelle perfomance
+    \item Non richiede nessun supporto hardware specifico
+\end{itemize}
+Contro della Paravirtualizzazione:
+\begin{itemize}
+    \item Supporta solamente delle versioni modificate del OS
+    \item Alcuni source OS chiusi non sono supportati
+\end{itemize}
+Sistemi paravitualizzati, come XEN, erano molto popolari all'inizio per le loro perfomance migliori. Con l'avvento del supporto hardware per la virtualizzazione non era più vantaggioso utilizzare questi sistemi rispetto alla Full Virtualization, quindi non furono più così popolari e furono convertiti in sistemi Full Virtualization.\\ \\
+Xen è l'hyoervisor più popolare basato su paravirtualizzazione. Era stato rilasciato nel 2003 prima della nascita del supporto hardware per la virtualizzazione. Era stato creato per ridurre l'overhead della Full Virtualization, dove in sistemi x86 non era semplice andare a virtualizzare usando uno standard trap-and-emulate hypervisor. Xen ha cercato di trovare un compromesso tra lo riscrivere il kernel del OS ed usare troppo la emulazione. È basato su un set di modifiche fatte sul kernel di Linux in modo da poter far girare il OS linux in un modo più efficiente in un modo paravirtualizzato. Dato che il supporto hardware ha reso meno conveniente usare la paravirtulizzazione, Xen ora supporta anche la Full Virtualization con hardware support. In questo modo qualsiasi OS(e non solamente quelli modificati) possono girare su Xen.\\
+Xen è un kernel molto piccolo che si è isolato per primo sulla macchina (???) e ottiene il vantaggio di un controllo diretto dell'hardware. Sopra a Xen, con un livello di privilegio più basso, abbiamo i così detti domini. Ci possono essere tanti domini quanti sono necessari, all'interno di ognuno possiamo andare a far girare un intero OS con le sue applicazioni.\\
+Un dominio speciale, il Dom0, ha accesso alle API di Xen e può andare a creare o distruggere altri domini. All'interno del Dom0 qualsiasi OS Linux può essere istallato e possono essere sviluppati tools personalizzati che vanno a gestire altri domini. I domini possono avere accesso diretto ad alcuni dispositivi I/O, o possono usare dei dispositivi fully virtualized, o possono usare dei dispositivi paravirtualizzati.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{img/Virt_tech/19.png}
+\caption{Xen Hypervisor}
+\end{figure}
+\\ \\
+Uno use-case per la virtualizzazione è poter andare a condividere le risorse hardware tra differenti applicazioni sullo stesso sistema in modo sicuro. L'isolamento delle applicazioni dovrebbe essere fatto dallo stesso OS, comunque, recentemente i OS sono diventati sempre meno efficaci nel garantire l'isolamento. Come conseguenza la configurazione più tipica nel garantire l'isolamento è far girare le applicazioni in differenti VMs. L'overhead portato dalla virtualizzazione non è trascurabile, sia in termini di memoria che di processing time per via del VMM e del guest OS in cui la applicazione gira. Solitamente differenti VMs condividono lo stesso guest OS, come risultato potremmo avere multiple istanze dello stesso OS che girano sullo stesso hardware. (Solitamente in un sistema virtualizzato il guest OS e l'Host OS hanno lo stesso sistema operativo, esempio Linux, e con la virtualizzazione potremmo avere molte full virtualizations tutte con lo stesso OS -> l'overhead è significativo).
+\\
+La Paravirtualizzazione è ugualmente caratterizzata dall'overhead introdotto dal VMM. In aggiunta, nel caso in cui più istanze dello stesso sistema operativo siano distribuite all'interno delle VM sulle stesse istanze hardware del kernel, i processi del OS e le librerie gireranno sulla macchina. Recentemente sono state introdotte nuove tecnologie di virtualizzazione leggera. Lo scopo è quello di creare un ambiente di esecuzione leggero per i servizi e le applicazioni che non richiedono la virtualizzazione dell'intero sistema ma riescano comunque a garantire gli stessi vantaggi della virtualizzazione ovvero:
+\begin{enumerate}
+    \item isolamento
+    \item dynamic instantiation
+    \item ambiente autonomo
+\end{enumerate}
+\\ \\
+Un differente approccio per la virtualizzazione leggera è stato proposto recentemente: \textbf{Operating System Virtualization} o \textbf{Shared Kernel Approaches}. Il suo obiettivo è quello di avere un approccio leggero che vada a minimizzare l'overhead portato dal far girare più VMs con lo stesso OS sullo stesso sistema. Con il OS virtualization l'hypervisor viene rimosso: i server virtuali sono abilitati dal kernel del sistema operativo della macchina fisica. Il kernel del OS è condiviso tra tutti i server virtuali che girano su di esso e dato che questo è condiviso tutte le VMs condivideranno lo stesso OS, che dovrà implementare le istanze dello user space logicamente distinte. Degli esempi sono FreeBSD Jails o Linux Containers.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{img/Virt_tech/20.png}
+\caption{Xen Hypervisor}
+\end{figure}
+Pro:
+\begin{enumerate}
+    \item La virtualizzazione del OS è più leggera per quanto riguarda l'overhead dato che tutti i server virtuali condivideranno la stessa istanza del kernel. Posso avere anche differenti distribuzioni dello stesso OS la cosa importante è che questi abbiano lo stesso kernel.
+    \item Un singolo sistema con la stessa quantità di risorse può supportare più VMs rispetto alla full virtualization (non c'è overhead addizionale).
+\end{enumerate}
+Cons:
+\begin{enumerate}
+    \item Tutte le VMs devono condividere lo stesso kernel
+    \item Non tutti i OSs supportano questo tipo di virtualizzazione (come per la paravirtualizzazione ma solitamente i OSs offrono questo tipo di virtualizzazione)
+\end{enumerate}
+\\ \\
+I containers sono un modo per isolare un set di processi e fargli credere che sono gli unici a girare sulla macchina. La macchina che vedono può avere solo un sottoinsieme delle risorse effettivamente disponibili nell'hardware fisico (esempio meno memoria, meno spazio su disco, meno banda). Quindi in questo contesto il processo ha una visione differente del sistema sotto due punti di vista:
+\begin{enumerate}
+    \item I processi che possono vedere e quindi con cui possono interagire
+    \item il set di risorse disponibili
+\end{enumerate}
+Per questo i containers non sono full virtualization.
+I containers non sono macchine virtuali in generale: i processi che girano al loro interno sono dei normali processi che girano nel kernel dell'host. Di conseguenza non vi è nessun kernel del guest che gira all'interno del container. Per questo motivo non è possibile eseguire un sistema operativo arbitrario in un container. Nel momento in cui il kernel è condiviso con l'host, deve essere lo stesso del host OS. Il vantaggio più grande nell'usare i containers rispetto alle macchine virtuali è la performance: Non vi è alcuna penalità di prestazione nell'eseguire una applicazione all'interno di un container rispetto ad eseguirlo su un host.\\
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{img/Virt_tech/21.png}
+\caption{Containers VS Virtualization}
+\end{figure}
+\\ \\
+I containers di Linux sono i più famosi e più utilizzati per virtualizzare il OS. Sono implementati usando due features del kernel: names-spaces e control group. Queste due features si occupano di creare un spazio isolato per far girare l'applicazione che può accedere solamente a un set di risorse (o processi) alle quali è stato dato il permesso di accedere.\\
+I Namespaces forniscono un mezzo per separare le risorse di sistema in modo che possano essere nascoste dai processi selezionati. Sono l'estensione di una vecchia funzione Unix: chroot(), una system call che permette a un processo di specificare una porzione del file system al quale l'applicazione è confinata. Usando chroot un utente root seleziona una subdirectory (un sotto albero dele file system) che sarà la radice del file system del processo. È stato definito per confinare il processo non attendibile ad una parte del file system in modo che possano accedere solo ai file di cui hanno bisogno, quindi andando ad aumentare la sicurezza del sistema e successivamente fu esteso al namespace. 
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{img/Virt_tech/22.png}
+\caption{Containers VS Virtualization}
+\end{figure}
+Quest'ultimo fu introdotto per nascondere o creare altre copie di altre risorse di sistema. Differenti namespaces sono definiti, esempio sono i network namespaces che servono per nascondere le network interfaces o per creare delle interfaccie virtuali, pid namespaces che servono per nascondere i processi.
+\\ \\
+I namespaces non sono sufficienti per isolare un insieme di processi in modo che questi non interferiscono con gli altri. Anche se il processo non può interagire con gli altri, questi possono abusare delle risorse di sistema ad esempio allocando troppa memoria, usando la CPU per troppo tempo o andando usare troppa banda. \textbf{I control groups sono dei gruppi di processi, per i quali l'utilizzo delle risorse è controllato e forzato}. Questi sono creati dall'amministratore di sistema (root user), ogni processo deve appartenere a un gruppo dal quale non può fuggire. Quando un processo crea un processo figlio (utilizzando la fork() ad esempio) questo andrà ad ereditare il control group del padre. Ogni gruppo può essere collegato a uno o più sottosistemi per andare a limitare l'accesso alle risorse di sistema, come ad esempio: memoria, per limitare la quantità di RAM accessibile ad ogni gruppo; cpu, per limitare la massima frazione di CPU che ogni gruppo può usare.
+\\ \\
+Il namespace e il control group gestiscono anche l'hardisk nei containers o sono condivisi dal guest OS?\\
+Con i containers non abbiamo un guest OS, noi abbiamo un ambiente che supporta l'esecuzione della applicazione. Le periferiche, eventualmente, sono gestite dal OS dell'host e dal kernel dell'host che è condiviso dai differenti containers. Il software che gira all'interno del container non ha accesso all'hard drive ma al file system, che potrebbe essere solamente un sottoinsieme e non tutto il file system del OS dell'host. Quindi il namespace crea un file sistem customizzato e quindi in termini di file system possiamo dire che il container vede solamente un sottoinsieme del file system. Altre periferiche potrebbero avere solamente una rappresentazione virtualizzata, ad esempio il container potrrebbe avere accesso a una interfaccia della network virtualizzata che potrebbe essere connessa fisicamente all'interfaccia reale della network. Quindi ogni container potrebbe avere una netwrok virtuale che è gestita dal kernel dell'host e che si occupa di andare a gestire il traffico e inoltrarlo ad internet se il container ha il peermesso di farlo.
+\\ \\
+Oltre che provvedere una virtualizzazione leggera i containers sono utilizzati per il software distribution. Un esempio è \textbf{Docker}, un sistema popolare che sfrutta la virtualizzazione a livello di sistema operativo per distribuire pacchetti software in container che hanno al loro interno tutto quello che è necessario per l'esecuzione del software. Questi infatti provvedono un bundle isolato in cui il software, le librerie e i file di configurazione possono essere inclusi. Un package Docker dopo l'installazione è pronto per essere eseguito, non richiede l'installazione di librerie addizionali o dipendenze grazie al fatto che i containers non cambiano da una macchina all'altra. \\
+L'architettura di Docker permette di instanziare i containers sul sisteema basandosi su una immagine scaricata da una repository centralizzata, la Docker registry. Un host eseguirà la Docker engine che può essere scaricata e andrà a eseguire un container scaricato dal registry. I Software bundles possono essere caricato dagli sviluppatori sul registry, mentre la Docker engine locale provvede a fornire una interfaccia all'utente per poter andaree a selezionare e installare i package del software.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{img/Virt_tech/23.png}
+\caption{Containers VS Virtualization}
+\end{figure}
+\\ \\
+I containers hanno avviato un nuovo modello di cloud computing: Serveless computing o microservices. I consumers del Cloud non andranno a creare delle full VMs per andare a implementare i loro servizi (o software) sul cloud, ma andranno a creare e implementare dei containers con il loro software che gira all'interno di un ambiente da loro preparato in maniera tale che sia subito pronto all'uso (invece che andare a provvedere una macchina full virtualized). I Cloud providers vendono i servizi basandosi su questo modello, nuove piattaforme cloud sono state create per supportare questo (lo vedremo poi nel dettaglio).
+
 \newpage
 \section{Applicazioni Cloud}
 PACCHETTO C01
@@ -1163,6 +1263,7 @@ Per quanto riguarda il rilevamento e la risoluzione di conflitti sulle update, B
 
 \newpage
 \section{Piattaforme Cloud}
+\subsection{Piattaforme di Cloud Computing}
 Le recenti tecnologie di virtualizzazione permettono di creare macchine virtuali al di sopra dell'hardware regolare: l'infrastruttura cloud sfrutta questo hardware non modificato per supportare la creazione delle macchine virtuali. Un gruppo di server si interconnettono tra loro attraverso un LAN ad alta velocità e si connettono a internet mediante un router. Questo gruppo di server e la LAN sono situati in un datacenter. Su ogni server è installato un hypervisor.\\
 Un pool di server, che eseguono ognuno un hypervisor, sono uniti per creare una \textbf{piattaforma cloud}, un sistema distribuito che controlla gli hypervisor di tutti i server:
 \begin{itemize}
@@ -1187,10 +1288,10 @@ L'architettura generale delle piattaforme cloud è semplice:
     \caption{Architettura Piattaforma Cloud}
 \end{figure}\noindent
 
-\subsection{OpenStack}
+\subsubsection{OpenStack}
 \textit{OpenStack} è una piattaforma software open-source per il cloud computing modello IaaS e è la soluzione principale adottata per il modello privato di cloud computing.
 
-\subsubsection{OpenStack Piattaforma Software}
+\paragraph{OpenStack Piattaforma Software}
 \textit{OpenStack} non richiede hardware particolarmente potente per funzionare. Il software è installato su ogni server e funziona sul sistema operativo dell'host; ognuno di questi server è chiamato \textbf{OpenStack Node}.\\
 \textit{OpenStack}, sfruttando i singoli hypervisor, crea e distrugge le macchine virtuali.
 La piattaforma gestisce la connessione delle macchine virtuali alla Rete Virtuale, utilizzata per comunicare con le altre macchine e con le reti esterne.
@@ -1202,7 +1303,7 @@ Inoltre essa gestisce lo spazio di archiviazione, questo permette la creazione d
     \caption{OpenStack Piattaforma Software}
 \end{figure}\noindent
 
-\subsubsection{Istanza di OpenStack}
+\paragraph{Istanza di OpenStack}
 I nodi che eseguono \textit{OpenStack} sono configurate per formare una singola \textbf{istanza di OpenStack} combinando insieme capacità di computazione, memoria e archiviazione per creare le macchine virtuali.\\
 In una singola istanza almeno un nodo è configurato come \textbf{controller} che ha il compito di coordinare le funzioni di OpenStack e gestire le risorse dell'istanza. Gli altri nodi sono configurati come \textbf{nodi computazionali} che offrono le risorse per eseguire le macchine virtuali. \\
 I nodi sono connessi attraverso una LAN ad altà velocità reale, utilizzata come
@@ -1211,7 +1312,7 @@ I nodi sono connessi attraverso una LAN ad altà velocità reale, utilizzata com
     \item rete di comunicazione tra i componenti di \textit{OpenStack}
 \end{itemize}
 
-\subsubsection{Architettura di OpenStack}
+\paragraph{Architettura di OpenStack}
 La piattaforma offre:
 \begin{itemize}
     \item una dashboard web per permettere a utenti e admin di gestire le risorse virtuali.
@@ -1232,7 +1333,7 @@ I servizi si scambiano le operazioni di coordinazione e le informazioni di stato
     \caption{Architettura OpenStack}
 \end{figure}\noindent
 
-\subsubsection{Servizi di OpenStack}
+\paragraph{Servizi di OpenStack}
 \textit{OpenStack} presenta dei servizi Core (Nova, Glance, Keystone), ovvero che sono mandatori ad ogni installazione, e servizi opzionali (per esempio Cinder, Neutron, ecc.), che vengono installati solo se le loro funzionalità sono richieste.\\
 I servizi sono installati sul nodo controller o sui nodi computazionali a seconda delle funzionalità; alcuni devono esseri installati su entrambi i tipi di nodo con configurazioni diverse. \\
 Tutti i servizi nel nodo controller sfruttano alcuni servizi di supporto: 
@@ -1253,7 +1354,7 @@ All'interno della piattaforma, i servizi interagisco tra loro in tre modi divers
 \end{figure}\noindent
 % Nella parte finale del pacchetto D02 c'è altra roba su OpenStack quindi aggiungetela qua poi
 
-\subsection{Keystone}
+\subsubsection{Keystone}
 \textit{Keystone} è una componente per l'\textbf{identity management} ed è sfruttata da \textit{OpenStack} per l'\textbf{autenticazione} e l'\textbf{autorizzazione} ad alto livello: assicura la sicurezza concedendo o negando a Utenti diversi l'accesso agli oggetti.\\
 Gli oggetti sono raggruppati in \textbf{progetti} e le autorizzazioni possono essere concesse in base ai progetti a cui un utente è assegnato.
 Solitamente \textit{Keystone} è installato sul nodo controller.\\
@@ -1264,11 +1365,11 @@ L'autorizzazione di \textit{Keystone} è un'autorizzazione di tipo token-based: 
     \item ogni servizio si occupa di validare il token.
 \end{enumerate} 
 
-\subsection{Nova}
+\subsubsection{Nova}
 \textit{Nova} è una componente per la \textbf{gestione delle macchine virtuali} ed è responsabile di istanziare e gestire le macchine virtuali. \textit{Nova} non implementa una nuova tecnologia di virtualizzazione, ma si interfaccia con gli hypervisor esistenti e può usare tecnologie di virtualizzazione diverse.\\
 \textit{Nova} include due moduli diversi: nova controller installato sul nodo controller e il nova agent installato sui nodi computazionali.
 
-\subsubsection{Nova Controller}
+\paragraph{Nova Controller}
 Il componente nova del controller è responsabile di gestire le richieste degli utenti e le risorse disponibili sui nodi: colleziona le richieste di creazione o distruzione delle macchine virtuali dalle interfacce, valuta le azioni da compiere e le invia ai nodi computazionali.\\
 Il modulo nova installato sul controller è composta da:
 \begin{itemize}
@@ -1280,12 +1381,12 @@ Il modulo nova installato sul controller è composta da:
 \end{itemize}
 Tutti le componenti interagiscono tramite coda di messaggi.
 
-\subsubsection{Nova Agent}
+\paragraph{Nova Agent}
 Nei nodi computazionali, la componente nova ha il compito di ricevere le istruzioni dal modulo controller e di tradurle in comandi per l'hypervisor.\\
 Il nova agent è composto solo dal \textbf{compute service}: riceve i comandi dal controllo e istanzia o termina le macchine virtuali interagendo con l'hypervisor.
 Nel nodo vengono mantenuti driver per interfacciarsi con diversi hypervisor e ogni driver espone un'interfaccia comune usata dal nova agent per interagire con gli hypervisor.
 
-\subsubsection{Workflow della Creazione delle Macchine Virtuali}
+\paragraph{Workflow della Creazione delle Macchine Virtuali}
 Quando arriva una richiesta per la creazione di una nuova macchina virtuale le componenti nova eseguono i seguenti passaggi:
 \begin{enumerate}
     \item Nova-API riceve la richiesta e la passa al Nova-Conductor.
@@ -1306,7 +1407,8 @@ La politica di schedulazione di \textit{Nova} può essere personalizzata per sod
     \includegraphics[scale=0.5]{img/nova_policy.png}
     \caption{Creazione VM con Nova}
 \end{figure}\noindent
-\subsection{Glance}
+
+\subsubsection{Glance}
 Le macchine virtuali sono solitamente costruite a partire da un'immagine-template di un hard drive virtuale, che include già un sistema operativo pre-installato e pre-configurato. \textit{Glance} è il servizio di gestione delle immagini di \textit{OpenStack}, gestisce le sopracitate immagini. Quindi, gli utenti possono caricare queste immagini pre-configurate da installare sulle proprie macchine virtuali. \\
 Le immagini possono anche essere "personalizzate", per andare a includere set di software che saranno pronti all'uso una volta installata l'immagine. \\
 \textit{Glance} è formato da 2 sottocomponenti: 
@@ -1325,7 +1427,7 @@ Questo servizio Glance, tipicamente viene installato nel nodo controller. In def
     \caption{Architettura Glance}
 \end{figure}\noindent
 
-\subsection{Neutron}
+\subsubsection{Neutron}
 Componente responsabile di creare e gestire network virtuali. I \textit{Virtual Network}, quindi, avranno il compito di collegare macchine virtuali, anche se quest'ultime girano su nodi differenti. \\
 \textit{Neutron} non solo gestisce il network virtuale, ma anche il forwarding del traffico tra macchine virtuali differenti. Quindi, sostanzialmente, fornisce una gestione completa del network virtuale. \\
 Il \textit{Local Physical Network} che interconnette i nodi, è sfruttato da Neutron per implementare la rete virtuale. In generale, come già visto nella teoria della virtualizzazione, per virtualizzare una risorsa, tipicamente ne serve una "fisica". Questo principio, quindi, è valido anche per il network. 
@@ -1385,7 +1487,7 @@ Una delle ultime versioni sfrutta \textit{OpenVSwitch} per implementare le funzi
     \caption{Neutron Agent}
 \end{figure}\noindent
 
-\subsection{OpenVSwitch}
+\subsubsection{OpenVSwitch}
 OVS è un'implementazione open-source di un uno switch di rete virtuale distribuito. Progettato specificatamente per fornire uno stack di switching per ambienti di virtualizzazione hardware, può girare all'interno del (o insieme a) l'hypervisor, per gestire il traffico da/a le macchine virtuali. Supporta l'implementazione del filtering, routing, switching e manipolazione dei pacchetti. \\
 Adotta un approccio centralizzato (SDN): ogni nodo ha la sua istanza OVS, che è controllata da un \textit{controller}. Seguendo le direttive del controller, tutte le istanze OVS implementano uno switch virtuale distribuito.
 \begin{figure}[H]
@@ -1487,7 +1589,7 @@ I tunnel VXLAN sono utilizzati da Neutron alla stessa maniera in cui vengono uti
     \caption{Neutron e VXLAN}
 \end{figure}\noindent
 
-\subsection{Cinder}
+\subsubsection{Cinder}
 \textit{Cinder} è il componente responsabile della gestione di \textbf{volumi}. Ogni macchina virtuale ha un hard drive di default in cui è salvato il sistema operativo. Se una macchina virtuale richiede uno storage aggiuntivo, possono essere dinamicamente creati volumi addizionali di storage e aggiunti ad un'istanza. Questi volumi sono visti come hard drive virtuali dalla macchina virtuale. \\
 Un hard drive virtuale è salvato nel file system come un'immagine (un file o un oggetto). \\
 \textit{Cinder} è responsabile della gestione di queste immagini e di esporle alle macchine virtuali. Un hard drive virtuale è esposto dall'hypervisor, che accede agli hard drive virtuali attraverso il protocollo \textit{iSCSI}. \\
@@ -1512,12 +1614,309 @@ Cinder comprende i seguenti componenti:
     \caption{Architettura Cinder}
 \end{figure}\noindent
 
-\subsection{Ceilometer}
-Ceilometer è un componente di telemetria. Monitora tutti i componenti dell'istanza, misurando le risorse che vengono utilizzate da ogni utente. I dati che vengono raccolti da Ceilometer possono essere utilizzate per scopi di fatturazione. Monitora, inoltre, componenti telemetrici che possono essere usati per controllare lo stato del sistema.
+\subsubsection{Ceilometer}
+Ceilometer è un componente di telemetria. Monitora tutti i componenti dell'istanza, misurando le risorse che vengono utilizzate da ogni utente. I dati che vengono raccolti da Ceilometer possono essere utilizzati per scopi di fatturazione. Monitora, inoltre, componenti telemetrici che possono essere usati per controllare lo stato del sistema.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{img/Celiometer.png}
+    \caption{Ceilometer}
+\end{figure}\noindent
+\paragraph{Architettura di Celiometer}
+Ceilometer ha un \textit{Ceilometer-Collector} centralizzato, che è responsabile di ricevere tutti i dati dagli altri componenti di \textit{OpenStack} e di salvarli in un Database (tipicamente un database NoSQL tipo \textit{MongoDB}). Per collezionare dati dai nodi computazionali, si installa un \textit{Ceilometer-Agent} su ogni nodo. L'agente è responsabile di collezionare tutte le notifiche da tutti i componenti locali e inoltrarli al collector. \\
+Il collector può esporre un set di API REST per recuperare i dati dal database.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/Ceilometer architecture.png}
+    \caption{Architettura Ceilometer}
+\end{figure}\noindent
 
+\subsubsection{Horizon}
+Le funzionalità di \textit{OpenStack} sono esposte agli utenti attraverso una interfaccia web. La dashboard tipicamente è esposta dal controller. Consente la gestione di tutti gli aspetti delle istanze e fornisce un set di tools da linea di comando per la gestione backend.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.6]{img/Horizon.png}
+    \caption{Horizon}
+\end{figure}\noindent
+
+\subsubsection{API di servizio}
+Ogni servizio di \textit{OpenStack} espone un set di API, tutte le API di comunicazione sono REST. Le API vengono esposte da ogni servizio per l'interazione fra servizi e per esporre un set di funzionalità agli utenti. Queste API possono essere sfruttate dagli utenti per integrare il processo di automazione in applicazioni esterne.\footnote{\url{http://developer.openstack.org/api-ref.html}}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/Service API.png}
+    \caption{Service APIs}
+\end{figure}\noindent
+
+\subsubsection{Swift}
+Swift è il servizio di storage di oggetti disponibile in \textit{OpenStack}. Consente agli utenti e agli altri moduli di OpenStack di salvare dati (rappresentati come oggetti), nella piattaforma Cloud. Gli altri servizi, come per esempio \textit{Cinder} o \textit{Glance}, possono utilizzare Swift per salvare rispettivamente backup di volumi o immagini. \\
+Il componente è responsabile di gestire tutti gli aspetti dello storage di dati, dal ricevere e salvare i dati fino al recupero. I dati sono tipicamente salvati nello storage cloud, per garantire scalabilità. \\
+Swift è composto da 2 componenti:
+\begin{itemize}
+    \item \textit{Swift-Proxy}: è responsabile di esporre l'interfaccia REST e gestire richieste (salvare un nuovo oggetto o recuperare un oggetto).
+    \item \textit{Swift-Storage-Node}: che è installato su ogni "Nodo Storage" (un nodo che hosta una parte di dati), per salvare i dati su un disco fisico
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/swift.png}
+    \caption{Swift}
+\end{figure}\noindent
+
+\subsubsection{Heat}
+Heat è l'orchestratore di \textit{OpenStack}. Può gestire la creazione o la distruzione di VM o le loro impostazioni automaticamente. Questa automazione è basata su un set di regole che specificano quando devono triggerare azioni da effettuare sulla VM. \\
+Attraverso Heat, per esempio, si può creare un servizio di autoscaling per sfruttare i dati riferiti allo status da Ceilometer per creare o distruggere VM in riferimento allo stato del sistema. \\
+Il componente è composta dai seguenti moduli:
+\begin{itemize}
+    \item \textit{Heat-API}: espone l'interfaccia agli utenti per configurare l'orchestratore.
+    \item \textit{Heat-Engine}: che è responsabile di gestire le richieste degli utenti e implementarle.
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/heat.png}
+    \caption{Heat}
+\end{figure}\noindent
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{img/openstack summary.png}
+    \caption{Riassunto dell'interazione dei servizi di OpenStack}
+\end{figure}\noindent
+
+\subsubsection{High Availability (HA)}
+L'architettura attuale include soltanto una istanza dei componenti di gestione. \textit{OpenStack} può essere installata nella cosiddetta configurazione ad alta disponibilità, ovvero è possibile distribuire più istanze di ciascun servizio al fine di garantire elevata disponibilità ed elasticità. Questo può essere effettuato in una maniera simile, le applicazioni cloud sono implementate in una maniera ridondante per garantire alta disponibilità. \\
+Nella configurazione ad alta disponibilità, vengono distribuite multiple istanze di nodi controller con tutti i corrispondenti servizi, per controllare lo stesso set di nodi computazionali.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/high availability 1.png}
+    \caption{High Availability}
+\end{figure}\noindent
+\paragraph{Alta Disponibilità con nodi dedicati}
+Le API di OpenStack sono esposte non direttamente dal nodo controller ma attraverso un Proxy di alta disponibilità. Questo Proxy è responsabile di ricevere le richieste e inoltrarle a uno dei nodi controller. \\
+Il Proxy deve implementare funzionalità per rilevare quando avviene un fallimento dei nodi Controller, per rimuoverli dalla lista dei nodi attivi. \\ 
+Lo storage State deve essere replicato tra i nodi controller.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/high availability 2.png}
+    \caption{High Availability con nodi dedicati}
+\end{figure}\noindent
+\paragraph{Alta Disponibilità con ridondanza semplice}
+Le API di OpenStack sono esposte direttamente da un controller, selezionato come controller Master. \\
+Le funzionalità del Proxy di alta disponibilità sono implementate su tutti i controller, uno di quelli è marcato come attivo e serve richieste, mentre gli altri sono marcati come inattivi. Le istanze del Proxy ad alta disponibilità devono coordinarsi per rilevare fallimenti e triggerare la riconfigurazione quando è necessaria. \\ 
+Di nuovo, lo storage State deve essere replicato tra i nodi controller.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/high availability 3.png}
+    \caption{High Availability con ridondanza semplice}
+\end{figure}\noindent
+
+\subsection{Piattaforme Cloud Computing leggere per DevOps}
+\subsubsection{Development del Software - PRIMA}
+Alcuni anni fa, la maggior parte delle applicazioni software erano grossi monoliti, che giravano come un singolo processo o un piccolo numero di processi. Avevano dei tempi di rilascio molto lenti e avevano degli aggiornamenti poco frequenti dato che il development era complesso e poco pratico: i developer solitamente confezionavano l'intero sistema e lo consegnavano al team operativo, il team o gli amministratori responsabili di gestire le infrastrutture (i server). Cambiare una parte dell'applicazione richiedeva il redesign dell'intera applicazione. \\
+Nel tempo poi, la mancanza di confini tra i componenti software aumenta la complessità della progettazione e manutenzione, andando quindi a deteriorare la qualità dell'intera applicazione. Le applicazioni monolitiche spesso richiedono un piccolo numero di server alimentati. \\
+Questi suddetti sistemi, vengono chiamati "legacy" e sono installati e funzionanti anche oggi (anche se sono sostituiti piano piano). Se conviene sono stati "cloudificati", ovvero i server fisici sono stati sostituiti da VM. Questo processo va a semplificare il processo di manutenzione dell'infrastruttura, anche se l'implementazione del software e la sua manutenzione è ancora complessa. \\
+Quando l'applicazione deve avere a che fare con un carico crescente, si aggiungono risorse al server, ovvero si va ad utilizzare una scalabilità verticale e in questo modo non si va a modificare l'architettura originale dell'applicazione. Lo scaling verticale, però, ha dei limiti che non lo rendono sempre fattibile.
+\subsubsection{Development del Software - ADESSO}
+Il Cloud Computing ha radicalmente cambiato il modo in cui le applicazioni software sono progettate e implementate. Le grandi applicazioni monolitiche precedenti, adesso sono frammentate in componenti indipendenti, chiamati \textit{servizi} o \textit{microservizi}. \\ 
+I servizi sono disaccoppiati dagli altri e possono essere progettati, implementati, aggiornati e scalati individualmente. Ogni servizio/microservizio gira come un processo indipendente e comunica con le altre componenti attraverso delle interfacce ben definite. \\
+Questa struttura consente un ciclo di vita dell'applicazione molto più rapido: i componenti possono essere cambiati velocemente e facilmente, tutte le volte che è necessario per stare dietro ai rapidi cambiamenti dei requisiti aziendali. \\
+I servizi comunicano attraverso un protocolli sincroni (SOAP, HTTP/RESTful) o in maniera asincrona attraverso lo scambio di messaggi (ad esempio code di messaggi). Tali protocolli sono semplici e ben conosciuti dai programmatori. \\
+I servizi possono essere implementati separatamente, un cambiamento in uno di essi non comporta cambiamenti o la necessità di  re-implementarne altri (posto che le interfacce non cambino). \\
+Questa nuova architettura ha inoltre cambiato l'intero processo di implementazione di un'applicazione e, in particolare, come le applicazioni sono gestite e distribuite in produzione. Nel passato, il ciclo di vita dell'applicazione era gestito da:
+\begin{itemize}
+    \item Il \textbf{team di Development (dev team)}: i cui task erano di progettare e programmare il software dell'applicazione.
+    \item Il \textbf{team Operativo (ops team)}: che si prende cura di distribuire e di manutenere l'applicazione. 
+\end{itemize}
+Adesso le organizzazioni stanno adottando un approccio differente: lo stesso team che progetta l'applicazione si occupa anche di distribuirla e della manutenzione per tutto il ciclo di vita. Questo approccio viene chiamato \textit{DevOps}.
+
+\subsubsection{DevOps}
+Il principale vantaggio di questo approccio è quello di avere i programmatori più coinvolti nell'esecuzione dell'applicazione durante la produzione. Questo porta ad avere una maggior consapevolezza dei bisogni dell'utente e dei problemi nella progettazione dell'applicazione. \\
+Il processo di distribuzione è semplificato: nel senso che le release possono essere fatte più spesso: idealmente si possono avere programmatori che distribuiscono la propria applicazione autonomamente senza avere il team ops coinvolto (implementazione continua). Questa pratica, però, richiede ai programmatori di avere una conoscenza profonda dei dettagli dell'infrastruttura sottostante, il che non è sempre possibile o desiderabile.
+
+\subsubsection{NoOps}
+Anche se i programmatori e gli amministratori di sistema lavorano per raggiungere tutti lo stesso obiettivo, tipicamente hanno background, esperienze e motivazioni differenti. Anche se il modello DevOps è considerato un target per i suoi vantaggi, la sua implementazione è difficile perché i membri del team dev difficilmente avranno il background e l'esperienza necessaria per gestire l'infrastruttura. \\
+Una soluzione ideale potrebbe essere quella di mettere in pratica un approccio \textit{NoOps}, in cui i programmatori implementano l'applicazione da soli, senza conoscere nulla riguardo l'infrastruttura e senza avere a che fare con le peculiarità di distribuire l'applicazione. \\
+Una soluzione per abilitare automaticamente la gestione e la manutenzione potrebbe rendere fattibile implementare un approccio DevOps o NoOps. Si potrebbe comunque avere bisogno di avere un team ops per gestire l'infrastruttura, ma ai programmatori dovrebbe essere consentito di distribuire il loro software facilmente.
+
+\paragraph{Distribuzione e gestione dei servizi}
+Indipendentemente dalla conoscenza richiesta per la distribuzione e gestione, un'architettura basata su servizi ha altri inconvenienti. \\
+Quando un'applicazione è composta da un piccolo numero di componenti, la loro gestione è semplice. Quando il numero di componenti cresce, la complessità delle operazioni di distribuzione aumenta. \\  
+La configurazione manuale e la distribuzione è noiosa, prona ad errori e non fattibile quando il numero di servizi raggiunge un certo numero. Una soluzione per l'automazione della distribuzione e della configurazione dei componenti è richiesta per gestire applicazioni grandi con un gran numero di servizi. 
+\subparagraph{Dipendenze tra servizi}
+Come già detto, i servizi sono implementati come componenti separati in maniera indipendenti da teams differenti. Data la loro indipendenza, è comune avere teams differenti usare librerie differenti. Ogni team seleziona la sua libreria e quando accade di selezionare la stessa libreria, potrebbe accadere che si vadano a selezionare versioni differenti della stessa. In più, differenti teams vorrebbero avere la libertà di sostituire la libreria quando ce n'è la necessità. Quindi, andare ad implementare differenti servizi/applicazioni con dipendenze incrociate potrebbe essere un incubo per il team ops.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{img/dipendenze tra servizi.png}
+    \caption{Dipendenze tra servizi}
+\end{figure}\noindent
+
+Indipendentemente dal numero di singoli componenti, uno dei maggiori problemi che gli sviluppatori e i team operativi hanno, è quello di affrontare le differenze nell'ambiente in cui eseguono le applicazioni. Un metodo per semplificare questo tipo di operazioni è quello di distribuire applicazioni in un ambiente ideale e confinato dove tutte le librerie sono pre-installate e il vero hardware su cui il software sta girando è in qualche modo astratto. \\ 
+Questo ambiente può essere creato attraverso la full-virtualization, quindi andando a far girare il software in una macchina virtuale. Questa soluzione, tuttavia, è costosa, dato che la full-virtualization ha un overhead significativo. In più, utilizzando la VM, si ha un overhead in termini di configurazione della VM stessa dell'OS guest, per configurarla e installare le librerie necessarie.
+
+\subsection{Virtualizzazione leggera}
+I meccanismi di virtualizzazione leggera, come ad esempio i container, possono essere una soluzione a questo alto overhead richiesto dalla virtualizzazione "full". \\
+I container possono essere usati per preparare un ambiente virtualizzato in cui le librerie e le dipendenze sono pre-installate e configurate per far girare una certa applicazione o un servizio, parte di un'applicazione. \\ 
+In più i container possono essere facilmente spediti e installati su differenti macchine utilizzando un sistema di distribuzione ad-hoc che si prende cura di distribuire e installare le immagini su differenti macchine. Un esempio di questo è \textit{Docker}.
+
+\subsection{Kubernetes}
+Kubernetes è un sistema software implementato da \textit{Google}, consente di implementare e gestire facilmente applicazioni containerizzate su di esso. \\ Un'applicazione contanerizzata è un'applicazione i cui componenti (servizi indipendenti) sono distribuiti e spediti come contaniner differenti. \\
+Kubernetes mira a semplificare completamente il processo generale di distribuzione e gestione dei container che compongono l'applicazione, occupandosi degli aspetti relativi alla scalabilità, tolleranza agli errori, gestione delle risorse, ecc. L'obiettivo è quello di offrire un'infrastruttura IaaS leggera per distribuire le applicazioni in un modo semplice ed efficace, cosicché i programmatori possono occuparsene senza pensare ad altri aspetti. \\ 
+Il team operativo è sempre richiesto, in questo caso, tuttavia, è responsabile di mantenere e far girare l'infrastruttura di Kubernetes. \\
+Kubernetes è una piattaforma distribuita composta da un nodo \textbf{master} e un numero variabile di nodi \textbf{worker}. I nodi di Kubernetes possono essere installati direttamente sui server fisici o possono essere installati su piattaforme cloud su macchine virtuali. \\
+Il nodo \textit{master} di Kubernetes espone un'interfaccia ai programmatori, quest'ultimi possono richiedere di eseguire una specifica applicazione. Il programmatore deve solo inviare un descrittore dell'applicazione, che contiene soltanto la lista dei componenti che compone l'applicazione. E per ogni componente, si specifica la configurazione. Quindi, il \textit{master} di Kubernetes si prende cura di distribuire i componenti dell'applicazione sui nodi \textit{worker}, in accordo alla descrizione fornita dal programmatore in maniera totalmente automatica. \\
+Attraverso l'interfaccia, il programmatore può specificare che alcuni servizi devono girare insieme, conseguentemente sono implementate sullo stesso nodo \textit{worker}. Gli altri saranno divisi tra i cluster in accordo allo stato di ogni nodo. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{img/kubernetes.png}
+    \caption{Kubernetes}
+\end{figure}\noindent
+In più alla configurazione di ogni componente, il programmatore deve specificare il numero desiderato di istanze in modo da assicurare la scalabilità. La piattaforma si prenderà cura di replicare ogni componente e di bilanciare il carico del traffico tra loro, per assicurare scalabilità. La piattaforma poi, monitorerà lo stato di ogni componente e gestirà i fallimenti: in caso di fallimento di un'istanza (o fallimento del nodo \textit{worker} su cui è eseguita) la piattaforma si preoccupa di replicare l'istanza con una nuova.
+\paragraph{Vantaggi di Kubernetes}
+Kubernetes toglie ai programmatori l'impegno dell'implementazione di funzionalità legate all'infrastruttura. La piattaforma si prende cura di implementare funzionalità come lo "scaling", il bilanciamento del carico e un meccanismo di auto-riparazione. Conseguentemente, i programmatori possono concentrarsi sulla progettazione dell'applicazione senza perdere tempo per capire come integrare l'applicazione nell'infrastruttura. \\
+I compiti del team operativo sono, invece, alleggeriti: non si devono più preoccupare della distribuzione dei componenti, configurarli e successivamente risolvere i fallimenti, quelle funzionalità sono gestite dalla piattaforma stessa. In più, Kubernetes può ottenere un miglior utilizzo delle risorse disponibili nell'infrastruttura. 
+\paragraph{Architettura del Cluster}
+Il nodo \textit{master} implementa il \textit{piano controllo}, che è responsabile di controllare il cluster. Ogni componente del piano controllo può essere installato su un singolo nodo master, possono essere splittati tra nodi differenti o possono essere replicati per garantire alta affidabilità. %questa frase va chiarita con la registrazione.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{img/architettura kubernetes.png}
+    \caption{Architettura Kubernetes}
+\end{figure}\noindent
+Il \textit{piano controllo} ha i seguenti componenti:
+\begin{itemize}
+    \item \textbf{API server:} espone l'interfaccia ai programmatori.
+    \item \textbf{Scheduler:} schedula le applicazioni.
+    \item \textbf{Controller manager:} effettua funzionalità a livello di cluster, come la replica dei componenti e gestione dei fallimenti dei nodi.
+    \item \textbf{Etcd:} che è un componente per salvare dati in maniera affidabile.
+\end{itemize}
+I nodi \textit{workers}, invece, includono i seguenti componenti:
+\begin{itemize}
+    \item \textbf{Container runtime:} un ambiente runtime di container (come Docker, ad esempio) che si preoccupa di far girare i container.
+    \item \textbf{Kublet:} che parla con il server API e gestisce i container sul nodo.
+    \item \textbf{Kubernetes Service Proxy:} che si preoccupa di bilanciare il traffico di rete tra i componenti dell'applicazione e inoltra richieste, mentre i container sono migrati tra i nodi "working".
+\end{itemize}
+
+\paragraph{Distribuzione dell'applicazione}
+La descrizione dell'applicazione fornita dal programmatore, mette in lista i container che compongono l'applicazione. I container sono raggruppati in \textbf{pods}. \\
+Un \textit{pod} è un gruppo di container che devono girare sullo stesso nodo \textit{worker}, in altre parole devono essere distribuiti insieme e non dovrebbero essere isolati (un pod può essere un container). Per ogni pod o singolo container, il programmatore deve specificare la configurazione e il numero di repliche che devono essere distribuite.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/kubernetes deployment.png}
+    \caption{Deployment di Kubernetes}
+\end{figure}\noindent
+Dopo aver inviato il descrittore al piano controllo del nodo \textit{master}, lo scheduler schedula il numero specificato di repliche di pods al numero di nodi \textit{worker} disponibili. I \textit{Kublet} che girano sui nodi \textit{worker} si occupano di controllare \textit{Docker} per fare la pull delle immagini dei container dalla repository e farli girare.
+
+\paragraph{Gestione e Manutenzione}
+Una volta che l'applicazione sta girando, Kubernetes si occupa di controllare continuamente che lo stato dell'applicazione distribuita vada sempre a matchare con la descrizione fornita dai programmatori. \\
+Se una o più istanze spettono di girare correttamente (crash dell'applicazione), Kubernetes li riavvierà. Se l'istanza o l'intero nodo diventano inaccessibili, Kubernetes selezionerà un nuovo nodo per tutti i container che giravano su quel nodo. \\
+Mentre l'applicazione sta girando, il programmatore può decidere di aumentare o diminuire il numero di istanze, in questo caso la piattaforma può preoccuparsi di aggiungere o rimuovere istanze a runtime. Il programmatore può anche lasciar decidere alla piattaforma il numero ottimale di istanze per un certo container, in questo caso la piattaforma aggiusterà il numero di istanze basandosi su metriche real-time, come ad esempio il carico della CPU, consumo di memoria, query per secondi ecc...
+
+\paragraph{Migrazione del Container}
+La piattaforma si occupa automaticamente di istanziare container e migrarli quando è richiesto (per esempio quando un nodo fallisce). \\
+Quando un container fornisce un servizio ad un client esterno, la piattaforma deve occuparsi di inoltrare le richieste al container che è stato spostato. Quello che è tipicamente fatto, è che viene esposto uno specifico servizio con un singolo indirizzo IP pubblico, nonostante il numero di container e la loro posizione. La piattaforma, con il componente \textit{kube-proxy} si preoccupa di connettere i container e inoltrare il traffico in maniera corretta. In più, il componente si occupa di implementare policy di bilanciamento del carico per inoltrare il traffico in maniera bilanciata per assicurare la scalabilità.
+
+\paragraph{Esporre applicazioni}
+I pods sono connessi a una rete locale privata, in modo per consentire la comunicazione tra di loro. Ogni pod ottiene il proprio indirizzo IP, tuttavia questo indirizzo è interno a questa rete e non è accessibile dall'esterno. Queste reti private locali consentono la comunicazione tra container che girano sullo stesso o su differenti nodi \textit{workers}. \\
+Se un servizio ha bisogno di essere esposto a una rete esterna (perché, ad esempio, espone un'interfaccia web o le API REST dell'applicazione), il programmatore deve definire un \textit{oggetto servizio.} \\
+Un \textit{oggetto servizio} istruisce la piattaforma per associare con un pod un indirizzo IP esterno e la relativa porta, cosicché il servizio esposto dal pod possa essere raggiunto dagli host esterni. Il servizio si prenderà cura di inoltrare le richieste che arrivano dall'indirizzo IP esterno all'indirizzo IP locale di una delle istanze pod associate. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/kubernetes esporre applicazioni.png}
+    \caption{Esporre le applicazioni}
+\end{figure}\noindent
+
+\paragraph{Bilanciamento del carico}
+Un servizio può essere connesso ad un pod che richiede multiple istanze ridondanti per il bilanciamento del carico. In questo caso il servizio diffonde le richieste tra le differenti istanze. Ad ogni pod della piattaforma associa un controller di replica per assicurarsi che il giusto numero di istanze sia correttamente in esecuzione.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/kubernetes load balancing.png}
+    \caption{Load Balancing di Kubernetes}
+\end{figure}\noindent
+
+\paragraph{Gestione dei fallimenti}
+Il controller di replica è anche responsabile di monitorare le istanze di un pod per rilevare fallimenti. Se il fallimento di un nodo \textit{worker} è rilevato, il controller di replica lo rileva e reagisce andando a creare una nuova istanza pod.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{img/kubernetes gestione fallimenti.png}
+    \caption{Gestione fallimenti di Kubernetes}
+\end{figure}\noindent
+
+\paragraph{Pod design}
+La regola generale per raggruppare container in pod è che il programmatore dovrebbe sempre eseguire i container in pod separati, a meno che non ci sia una specifica ragione che richieda che siano parte dello stesso pod, quindi vengono distribuiti sullo stesso nodo \textit{worker}. \\
+Per esempio, un'applicazione potrebbe avere richieste di latenza nello scambio di dati tra 2 container, in questo caso è conveniente raggrupparli nello stesso pod, così non saranno obbligati a comunicare nella rete.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/Kubernetes pod design.png}
+    \caption{Pod design di Kubernetes}
+\end{figure}\noindent
 
 \newpage
 \section{Infrastrutture Cloud e Meccanismi}
+\subsection{Cloud Storage}
+Il modello di memorizzazione dei dati di un sistema di calcolo tradizionale consiste in uno o più hard-drive collegati ad un solo server. Il problema degli hard-drive è che possono fallire e, in media, hanno un ciclo di vita di circa 5 anni. Per gestire il fallimento di un server viene utilizzata la tecnologia \textbf{RAID} (\textit{Redundant Array of Independent Disks}) che può assicurare repliche e tolleranza dei fallimenti.
+
+\paragraph{RAID} E' una tecnologia che combina hard-drive multipli in uno o più hard-drive logici virtuali. Queste funzionalità possono essere implementate via hardware grazie ad un RAID controller al quale sono collegati i dischi fisici, oppure via software.
+\begin{itemize}
+    \item Hardware: il RAID controller gestisce gli hard-drive e, di conseguenza, le sue funzionalità sono nascoste al SO che accede solo al drive logico.
+    \item Software: le funzionalità RAID sono implementate dal SO che gestisce l'accesso ai dischi fisici e la creazione dell'unità logica.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{img/raid.jpg}
+    \caption{Schemi RAID}
+\end{figure}\noindent
+In figura sono riportati gli schemi RAID più popolari. In particolare, lo schema 0 è adottato per massimizzare le prestazioni. Lo schema 1 massimizza la ridondanza ed infine lo schema 5 propone una via di mezzo tra la 0 e la 1: vengono introdotti dei blocchi di parità (ottenuti tramite XOR).\\ \\
+Nonostante le ottimizzazioni introdotte da RAID, la capacità di memoria massima è limitata dal numero fisico di slot per hard-drive sul server. In particolare, i requisiti di memorizzazione delle piattaforme cloud sono diversi da quelli dei sistemi tradizionali. Il requisito principale è la scalabilità della memoria ovvero vogliamo avere un supporto di memorizzazione che si adatta alla quantità di dati immagazzinati.
+
+\subsubsection{File System Distribuito}
+Approccio inventato per superare la limitazione imposta dal numero di slot fisici su un server. Con questo approccio abbiamo il FS di un server distribuito su più server in modo da estendere la sua memoria grazie alla memoria di un altro server.
+\paragraph{GlusterFS} Tecnologia che crea un DFS mettendo insieme tutte le capacità di memorizzazione dei nodi disponibili. Non c'è distinzione tra client e server: tutti i nodi partecipano offrendo una parte della propria memoria locale. \textit{GlusterFS} è altamente configurabile con diversi livelli di ridondanza e repliche.
+Un altro motivo per il quale vogliamo implementare un sistema di memorizzazione condiviso è la possibilità di usare la \textbf{VM Live Migration}. Si tratta di una tecnica che consente di spostare una macchina virtuale in maniera dinamica da un nodo all'altro, il tutto mentre è in esecuzione. Questa tecnica richiede per forza un sistema di memorizzazione condiviso altrimenti la VM dovrebbe essere spenta e l'hard-drive che la contiene dovrebbe essere fisicamente spostato da un server all'altro introducendo un \textit{downtime} significativo.
+
+\paragraph{Storage Area Network} Una SAN è una rete ad alta velocità di dispositivi di memorizzazione ad alta capacità. Non sono server "classici" bensì dispositivi di memoria \textit{ad-hoc} connessi ai server che formano la piattaforma cloud. In questo modo creiamo un sottolivello di memorizzazione ad uso dei server. La comunicazione fra Server e SAN sarà gestita da protocolli \textit{ad-hoc}.\\
+Il fatto che richieda soluzione hardware \textit{ad-hoc} rende le tecnologie SAN complesse e costose, per questo motivo non tutte le piattaforme cloud se lo possono permettere. Per questo motivo esistono altre tecnologie che si propongono per offrire un sistema di memorizzazione unificato, scalabile, performante e poco costoso (basato quindi su hardware general-purpose). Una delle più popolari al momento è Ceph.
+
+\subsection{Ceph}
+Ceph fornisce un sistema di memorizzazione robusto, affidabile e di livello \textit{enterprise}. Gestisce autonomamente le repliche dei dati e il recupero dai fallimenti. Non c'è più bisogno di impiegare tecnologie quali il RAID. Può essere installato su dei server normali per creare un DFS (detto anche Ceph cluster) in cui la capacità di tutti gli hard-drive è messa a disposizione.
+
+\subsubsection{Architettura}
+Un sistema Ceph è composto da nuemrosi servizi software separati fra loro, ciascuno che si occupa di una diversa funzionalità. I client (che possono essere applicazioni o servizi cloud) interagiscono con questi servizi software.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/ceph.jpg}
+    \caption{Architettura Ceph}
+\end{figure}\noindent
+In Ceph tutto è salvto sotto forma di oggetti (anche di dimensioni enormi). Gli oggetti Ceph sono salvati in \textit{Object-based Storage Device (OSD)} secondo un approccio replicato. Il processo daemon OSD si occupa di trascrivere l'oggetto in un file nel FS OSD.\\
+Al centro di Ceph abbiamo \textbf{RADOS} (\textit{Reliable Autonomic Distributed Object Store}) il quale è responsabile della memorizzazione degli oggetti. Il livello RADOS fa si che i dati rimangano sempre in uno stato consistente e affidabile, esegue le repliche dei dati, rilevamento dei fallimenti \& recupero e bilanciamento dei dati redistribuendo tra i nodi del cluster. Un'applicazione che vuole interagire con RADOS può farlo grazie ad una libreria (LIBRADOS) che fornisce un'interfaccia nativa disponibile per diversi linguaggi di programmazione.\\
+Ceph offre la possibilità di utilizzare dei metodi di memorizzazione alternativi a quello a oggetti. Per fare ciò esistono servizi aggiuntivi sopra a LIBRADOS.
+\begin{itemize}
+    \item \textbf{Ceph Block Device} (RBD in figura): fornisce il \textit{block storage}.
+    \item \textbf{Ceph FS }: offre un DFS di qualunque dimensione.
+\end{itemize}
+Esiste il Ceph Monitor (\textbf{MON}) che è responsabile per monitorare lo stato di "salute" del cluster Ceph. Questi servizi MON si occupano di memorizzare informazioni critiche sul cluster quali stato e configurazione. Un set di istanze MON viene avviato per garantire la tolleranza dei fallimenti.
+
+\subsubsection{Algoritmo CRUSH}
+CRUSH - Controlled Replication Under Scalable Hashing\\
+I Ceph Client e gli OSD usano questo algoritmo per calcolare in maniera efficiente dov'è memorizzato un oggetto. In questo modo possono scoprire dov'è un oggetto in maniera indipendente, senza fare affidamento ad una tabella di lookup centralizzata. CRUSH calcola la posizione di un oggetto in base allo stato attuale del cluster.\\
+Lo stato del cluster è rappresentato attraverso una \textit{Cluster Map} (ottenibile da una qualsiasi istanza monitor MON) che contiene le seguenti informazioni:
+\begin{itemize}
+    \item Data di creazione e ultima modificia della mappa.
+    \item OSD Map: contiene la lista dei \textit{pool}\footnotemark.
+    \item PG Map: contiene i dettagli su ogni \textit{placement group}.
+    \item CRUSH Map: contiene una lista di dispositivi di memorizzazione, la gerarchia del dominio di fallimento, regole per attraversare la gerarchia quando si salvano dei dati.
+\end{itemize}
+\footnotetext{: Una \textit{pool} è una partizione logica per memorizzare oggetti. I client ottengono una Cluster Map dal Ceph Monitor e scrivono gli oggetti nelle pool.}
+Un cosiddetto \textit{Placement Group} determina su quale OSD (dispositivo fisico)  è memorizzato il dato (oggetto).\\
+Vediamo un esempio di come un client viene a sapere su quale OSD memorizzare un certo dato:
+\begin{enumerate}
+    \item Prima che un client possa leggere/scrivere dei dati deve contattare un Ceph Monitor per ottenere la copia più recente della Cluster Map.
+    \item Il client deriva il placement group applicando una funzione Hash all'ID dell'oggetto.
+    \item Viene eseguito l'algoritmo CRUSH che traduce il placement group in un OSD. Il risultato è una lista di OSD ordinata (un primario e un set di secondari che contengono l'oggetto desiderato).
+    \item Il client scrive l'oggetto nell'OSD primario. quest'ultimo identifica un secondario ed un terzo OSD per replicare il nuovo dato.
+    \item Risponde al client che l'oggetto è stato salvato con successo.
+\end{enumerate}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/pg.jpg}
+    \caption{Placement Groups}
+\end{figure}\noindent
 
 \addcontentsline{toc}{section}{Laboratori}
 \begin{appendices}
