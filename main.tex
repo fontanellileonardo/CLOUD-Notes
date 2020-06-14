@@ -812,7 +812,6 @@ Un dominio speciale, il Dom0, ha accesso alle API di Xen e può andare a creare 
 \includegraphics[scale=0.5]{img/Virt_tech/19.png}
 \caption{Xen Hypervisor}
 \end{figure}
-\\ \\
 Uno use-case per la virtualizzazione è poter andare a condividere le risorse hardware tra differenti applicazioni sullo stesso sistema in modo sicuro. L'isolamento delle applicazioni dovrebbe essere fatto dallo stesso OS, comunque, recentemente i OS sono diventati sempre meno efficaci nel garantire l'isolamento. Come conseguenza la configurazione più tipica nel garantire l'isolamento è far girare le applicazioni in differenti VMs. L'overhead portato dalla virtualizzazione non è trascurabile, sia in termini di memoria che di processing time per via del VMM e del guest OS in cui la applicazione gira. Solitamente differenti VMs condividono lo stesso guest OS, come risultato potremmo avere multiple istanze dello stesso OS che girano sullo stesso hardware. (Solitamente in un sistema virtualizzato il guest OS e l'Host OS hanno lo stesso sistema operativo, esempio Linux, e con la virtualizzazione potremmo avere molte full virtualizations tutte con lo stesso OS -> l'overhead è significativo).
 \\
 La Paravirtualizzazione è ugualmente caratterizzata dall'overhead introdotto dal VMM. In aggiunta, nel caso in cui più istanze dello stesso sistema operativo siano distribuite all'interno delle VM sulle stesse istanze hardware del kernel, i processi del OS e le librerie gireranno sulla macchina. Recentemente sono state introdotte nuove tecnologie di virtualizzazione leggera. Lo scopo è quello di creare un ambiente di esecuzione leggero per i servizi e le applicazioni che non richiedono la virtualizzazione dell'intero sistema ma riescano comunque a garantire gli stessi vantaggi della virtualizzazione ovvero:
@@ -821,7 +820,6 @@ La Paravirtualizzazione è ugualmente caratterizzata dall'overhead introdotto da
     \item dynamic instantiation
     \item ambiente autonomo
 \end{enumerate}
-\\ \\
 Un differente approccio per la virtualizzazione leggera è stato proposto recentemente: \textbf{Operating System Virtualization} o \textbf{Shared Kernel Approaches}. Il suo obiettivo è quello di avere un approccio leggero che vada a minimizzare l'overhead portato dal far girare più VMs con lo stesso OS sullo stesso sistema. Con il OS virtualization l'hypervisor viene rimosso: i server virtuali sono abilitati dal kernel del sistema operativo della macchina fisica. Il kernel del OS è condiviso tra tutti i server virtuali che girano su di esso e dato che questo è condiviso tutte le VMs condivideranno lo stesso OS, che dovrà implementare le istanze dello user space logicamente distinte. Degli esempi sono FreeBSD Jails o Linux Containers.
 \begin{figure}[H]
 \centering
@@ -838,7 +836,7 @@ Cons:
     \item Tutte le VMs devono condividere lo stesso kernel
     \item Non tutti i OSs supportano questo tipo di virtualizzazione (come per la paravirtualizzazione ma solitamente i OSs offrono questo tipo di virtualizzazione)
 \end{enumerate}
-\\ \\
+
 I containers sono un modo per isolare un set di processi e fargli credere che sono gli unici a girare sulla macchina. La macchina che vedono può avere solo un sottoinsieme delle risorse effettivamente disponibili nell'hardware fisico (esempio meno memoria, meno spazio su disco, meno banda). Quindi in questo contesto il processo ha una visione differente del sistema sotto due punti di vista:
 \begin{enumerate}
     \item I processi che possono vedere e quindi con cui possono interagire
@@ -851,7 +849,6 @@ I containers non sono macchine virtuali in generale: i processi che girano al lo
 \includegraphics[scale=0.5]{img/Virt_tech/21.png}
 \caption{Containers VS Virtualization}
 \end{figure}
-\\ \\
 I containers di Linux sono i più famosi e più utilizzati per virtualizzare il OS. Sono implementati usando due features del kernel: names-spaces e control group. Queste due features si occupano di creare un spazio isolato per far girare l'applicazione che può accedere solamente a un set di risorse (o processi) alle quali è stato dato il permesso di accedere.\\
 I Namespaces forniscono un mezzo per separare le risorse di sistema in modo che possano essere nascoste dai processi selezionati. Sono l'estensione di una vecchia funzione Unix: chroot(), una system call che permette a un processo di specificare una porzione del file system al quale l'applicazione è confinata. Usando chroot un utente root seleziona una subdirectory (un sotto albero dele file system) che sarà la radice del file system del processo. È stato definito per confinare il processo non attendibile ad una parte del file system in modo che possano accedere solo ai file di cui hanno bisogno, quindi andando ad aumentare la sicurezza del sistema e successivamente fu esteso al namespace. 
 \begin{figure}[H]
@@ -873,7 +870,6 @@ L'architettura di Docker permette di instanziare i containers sul sisteema basan
 \includegraphics[scale=0.5]{img/Virt_tech/23.png}
 \caption{Containers VS Virtualization}
 \end{figure}
-\\ \\
 I containers hanno avviato un nuovo modello di cloud computing: Serveless computing o microservices. I consumers del Cloud non andranno a creare delle full VMs per andare a implementare i loro servizi (o software) sul cloud, ma andranno a creare e implementare dei containers con il loro software che gira all'interno di un ambiente da loro preparato in maniera tale che sia subito pronto all'uso (invece che andare a provvedere una macchina full virtualized). I Cloud providers vendono i servizi basandosi su questo modello, nuove piattaforme cloud sono state create per supportare questo (lo vedremo poi nel dettaglio).
 
 \newpage
@@ -1750,12 +1746,12 @@ Come già detto, i servizi sono implementati come componenti separati in maniera
 Indipendentemente dal numero di singoli componenti, uno dei maggiori problemi che gli sviluppatori e i team operativi hanno, è quello di affrontare le differenze nell'ambiente in cui eseguono le applicazioni. Un metodo per semplificare questo tipo di operazioni è quello di distribuire applicazioni in un ambiente ideale e confinato dove tutte le librerie sono pre-installate e il vero hardware su cui il software sta girando è in qualche modo astratto. \\ 
 Questo ambiente può essere creato attraverso la full-virtualization, quindi andando a far girare il software in una macchina virtuale. Questa soluzione, tuttavia, è costosa, dato che la full-virtualization ha un overhead significativo. In più, utilizzando la VM, si ha un overhead in termini di configurazione della VM stessa dell'OS guest, per configurarla e installare le librerie necessarie.
 
-\subsection{Virtualizzazione leggera}
+\subsubsection{Virtualizzazione leggera}
 I meccanismi di virtualizzazione leggera, come ad esempio i container, possono essere una soluzione a questo alto overhead richiesto dalla virtualizzazione "full". \\
 I container possono essere usati per preparare un ambiente virtualizzato in cui le librerie e le dipendenze sono pre-installate e configurate per far girare una certa applicazione o un servizio, parte di un'applicazione. \\ 
 In più i container possono essere facilmente spediti e installati su differenti macchine utilizzando un sistema di distribuzione ad-hoc che si prende cura di distribuire e installare le immagini su differenti macchine. Un esempio di questo è \textit{Docker}.
 
-\subsection{Kubernetes}
+\subsubsection{Kubernetes}
 Kubernetes è un sistema software implementato da \textit{Google}, consente di implementare e gestire facilmente applicazioni containerizzate su di esso. \\ Un'applicazione contanerizzata è un'applicazione i cui componenti (servizi indipendenti) sono distribuiti e spediti come contaniner differenti. \\
 Kubernetes mira a semplificare completamente il processo generale di distribuzione e gestione dei container che compongono l'applicazione, occupandosi degli aspetti relativi alla scalabilità, tolleranza agli errori, gestione delle risorse, ecc. L'obiettivo è quello di offrire un'infrastruttura IaaS leggera per distribuire le applicazioni in un modo semplice ed efficace, cosicché i programmatori possono occuparsene senza pensare ad altri aspetti. \\ 
 Il team operativo è sempre richiesto, in questo caso, tuttavia, è responsabile di mantenere e far girare l'infrastruttura di Kubernetes. \\
