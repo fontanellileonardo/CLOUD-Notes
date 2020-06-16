@@ -1412,7 +1412,7 @@ Le immagini possono anche essere "personalizzate", per andare a includere set di
     \item \textbf{Glance:} per la gestione delle istanze. Espone l'interfaccia (REST API) agli altri moduli e all'utente. Salva la lista delle immagini disponibili e le relative feature nel DB.
     \item \textbf{Glance Storage:} è responsabile di memorizzare le immagini/template sul disco. È nascosto all'utente, comunica soltanto con l'immagine Glance. Supporta differenti opzioni di storage, attraverso differenti driver:
     \begin{itemize}
-        \item Un file system locale disponibile nella macchina in cui Glance sta girando.
+        \item Un file system locale disponibile nella macchina in cui Glance è in esecuzione.
         \item Un file system cloud.
     \end{itemize}
 \end{itemize}
@@ -1425,7 +1425,7 @@ Questo servizio Glance, tipicamente viene installato nel nodo controller. In def
 
 \subsubsection{Neutron}
 Componente responsabile di creare e gestire network virtuali. I \textit{Virtual Network}, quindi, avranno il compito di collegare macchine virtuali, anche se quest'ultime girano su nodi differenti. \\
-\textit{Neutron} non solo gestisce il network virtuale, ma anche il forwarding del traffico tra macchine virtuali differenti. Quindi, sostanzialmente, fornisce una gestione completa del network virtuale. \\
+\textit{Neutron} non solo gestisce il network virtuale, ma inoltra il traffico tra macchine virtuali differenti. Quindi, sostanzialmente, fornisce una gestione completa della rete virtuale. \\
 Il \textit{Local Physical Network} che interconnette i nodi, è sfruttato da Neutron per implementare la rete virtuale. In generale, come già visto nella teoria della virtualizzazione, per virtualizzare una risorsa, tipicamente ne serve una "fisica". Questo principio, quindi, è valido anche per il network. 
 \begin{figure}[H]
     \centering
@@ -1434,19 +1434,20 @@ Il \textit{Local Physical Network} che interconnette i nodi, è sfruttato da Neu
 \end{figure}\noindent
 Le funzionalità di Neutron sono implementate in una modalità distribuita, ed è formato da due sottocomponenti:
 \begin{itemize}
-    \item \textbf{Neutron-Server:} installato nel nodo \textit{controller}. È responsabile della gestione del network virtuale coordinando i \textit{Neutron-Agent} che girano nei nodi computazionali. È inoltre responsabile di esporre le API REST per la gestione, da parte degli utenti, del network virtuale.
-    \item \textbf{Neutron-Agent:} è un set di sotto-componenti. Installato uno per ogni \textit{nodo computazionale}. Sono responsabili di gestire il traffico dalle/alle macchine virtuali, che girano, appunto, sui nodi computazionali. In maniera specifica, spedisce il traffico diretto a/generato da la macchina virtuale locale in modo da emulare differenti network virtuali che si estendono su differenti nodi computazionali. I dati sono spediti sulla \textit{Local Physical Network}. L'agent deve assicurarsi dell'isolamento tra le differenti macchine virtuali.
+    \item \textbf{Neutron-Server:} installato nel nodo \textit{controller}. È responsabile della gestione del network virtuale coordinando i \textit{Neutron-Agent} che girano nei nodi computazionali. È inoltre responsabile di esporre le API REST per la creazione e successiva gestione, da parte degli utenti, del network virtuale.
+    \item \textbf{Neutron-Agent:} è un set di sotto-componenti. Installato uno per ogni \textit{nodo computazionale}. Sono responsabili di gestire il traffico tra le macchine virtuali, che girano, appunto, sui nodi computazionali. In maniera specifica, spedisce il traffico diretto a/generato da la macchina virtuale locale in modo da emulare differenti network virtuali che si estendono su differenti nodi computazionali. I dati sono spediti sulla \textit{Local Physical Network}. L'agent deve assicurarsi dell'isolamento tra le differenti macchine virtuali.
 \end{itemize}
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{img/neutron subcomponents.png}
     \caption{Neutron - Sottocomponenti}
-\end{figure}\noindent
+\end{figure}\
+Nell'immagine d'esempio: se la VM2 volesse inviare un pacchetto alla VM4 (che sono parte della stessa rete virtuale), invierà questo pacchetto al \textit{Neutron Agent} del nodo compute in cui è ospitato e questo si preoccuperà di inviarlo al \textit{Neutron Agent} della VM4, questo si preoccuperà di recapitare il pacchetto alla suddetta VM.
 
 \paragraph{Nodo Network} 
 I network virtuali sono tipicamente network privati. \textit{Neutron} consente alle macchine virtuali di essere connesse al reti "esterne", quindi di essere connesse ad internet e rese accessibili quest'ultimo. \\ 
 Per poter connettere una rete virtuale a Internet, deve essere istanziato un nodo Network. \\
-Un \textit{Nodo Network} è un nodo (che tipicamente corrisponde al controller) che è connesso ad un network esterno (attraverso Internet) oltre alla rete locale che connette i nodi di \textit{OpenStack}. \\
+Un \textit{Nodo Network} è un nodo (che tipicamente corrisponde al controller) che è connesso ad un network esterno (attraverso Internet) oltre alla rete locale che connette i nodi di \textit{OpenStack}. Per ridurre il numero di server nella rete, il Nodo Network può essere costruito direttamente in un nodo controller, ma non necessariamente deve esserlo. L'importante è che questi nodi non eseguano VM, perché le loro risorse devono essere dedicate alla gestione. \\
 Questo nodo fa girare un agente particolare, chiamato \textbf{Neutron-L3-Agent}, che è responsabile di fare il rerouting del traffico da/a la network virtuale privata a/da la rete pubblica. Questa funzionalità è effettuata andando a istanziare router virtuali, che hanno il compito di implementare il routing del traffico e la funzionalità NAT. \\ 
 In più, il Nodo Network ospita anche un modulo chiamato \textbf{Neutron-DHCP-Agent}, che ha il compito di gestire l'assegnamento della configurazione della rete alle macchine virtuali.
 \begin{figure}[H]
@@ -1454,17 +1455,17 @@ In più, il Nodo Network ospita anche un modulo chiamato \textbf{Neutron-DHCP-Ag
     \includegraphics[scale=0.5]{img/neutron network node.png}
     \caption{Neutron - Network Node}
 \end{figure}\noindent
-Possono essere associati indirizzi IP pubblici alle macchine virtuali. I router virtuali ai bordi della rete virtuale si preoccuperanno di implementare la \textit{Network Address Translation (NAT)}. La piattaforma consente di assegnare dinamicamente IP pubblici, attraverso un meccanismo di \textit{Floating IP address}. %Da approfondire
+Possono essere associati indirizzi IP pubblici alle macchine virtuali. I router virtuali ai bordi della rete virtuale si preoccuperanno di implementare la \textit{Network Address Translation (NAT)}. La piattaforma consente di assegnare dinamicamente IP pubblici, attraverso un meccanismo di \textit{Floating IP address}. 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.4]{img/neutron virtual network.png}
+    \includegraphics[scale=0.5]{img/neutron virtual network.png}
     \caption{Neutron - Virtual Network}
 \end{figure}\noindent
 
 \paragraph{Physical Network Infrastructure}
 Una tipica infrastruttura di rete \textit{OpenStack}, connessa ad una rete esterna, tipicamente è configurata con 3 differenti reti fisiche:
 \begin{itemize}
-    \item Una rete di management, utilizzata per la comunicazione dei servizi OpenStack.
+    \item Una rete di gestione, utilizzata per la comunicazione dei servizi OpenStack.
     \item Una rete interna alle macchine virtuali, utilizzata per gestire la comunicazione tra le differenti macchine virtuali.
     \item Una rete esterna, per l'accesso Internet.
 \end{itemize}
@@ -1484,7 +1485,7 @@ Una delle ultime versioni sfrutta \textit{OpenVSwitch} per implementare le funzi
 \end{figure}\noindent
 
 \subsubsection{OpenVSwitch}
-OVS è un'implementazione open-source di un uno switch di rete virtuale distribuito. Progettato specificatamente per fornire uno stack di switching per ambienti di virtualizzazione hardware, può girare all'interno del (o insieme a) l'hypervisor, per gestire il traffico da/a le macchine virtuali. Supporta l'implementazione del filtering, routing, switching e manipolazione dei pacchetti. \\
+OVS è un'implementazione open-source di un uno switch di rete virtuale distribuito. Progettato specificatamente per fornire uno stack "switching" per ambienti di virtualizzazione hardware, può girare all'interno del (o insieme a) l'hypervisor, per gestire il traffico da/a le macchine virtuali. Supporta l'implementazione del filtering, routing, switching e manipolazione dei pacchetti (in accordo a delle regole pre-stabilite). \\
 Adotta un approccio centralizzato (SDN): ogni nodo ha la sua istanza OVS, che è controllata da un \textit{controller}. Seguendo le direttive del controller, tutte le istanze OVS implementano uno switch virtuale distribuito.
 \begin{figure}[H]
     \centering
@@ -1571,11 +1572,11 @@ Le VLAN hanno un limite, dato che gli identificatori VLAN sono da 12 bits. Quind
 Nelle implementazioni con un grande numero di cloud, anche se grande, questo può essere un problema.
 \textbf{Virtual Extensible LAN (VXLAN)} è una tecnologia di virtualizzazione di rete che tenta di risolvere il problema di scalabilità associata a grandi deployment di cloud. Cerca quindi di rimuovere il limite di cui si è parlato precedentemente. \\
 Con VXLAN si possono avere fino a 16 milioni di differenti reti virtuali. È sempre una metodologia di incapsulamento dei pacchetti tra due endpoints, chiamata \textit{Virtual Tunnel Endpoints (VTE)}. \\
-I frames sono incapsulati in pacchetti UDP, mentre al livello IP sono specificati la sorgente e la destinazione dei VTE. \\
-Un header VXLAN è incluso per riportare l'ID della LAN virtuale come due VTE possono supportare multiple VLAN allo stesso tempo. %Da chiarire questa ultima frase ambigua con la registrazione.
+I frames sono incapsulati in pacchetti UDP (non più a livello 2), mentre al livello IP sono specificati la sorgente e la destinazione dei VTE. \\
+Un header VXLAN (che ha più di 12 bits) è incluso ogni volta che si crea un pacchetto VXLAN, per riportare l'ID della LAN virtuale. Dato che, due VTE possono supportare multiple VLAN allo stesso tempo, si usa l'ID quindi per distinguere la VXLAN.
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.4]{img/VXLAN.png}
+    \includegraphics[scale=0.5]{img/VXLAN.png}
     \caption{VXLAN}
 \end{figure}\noindent
 I tunnel VXLAN sono utilizzati da Neutron alla stessa maniera in cui vengono utilizzati i tunnel GRE. Per ogni rete virtuale, viene istanziato un nuovo ID VXLAN dal Server Nova. Quest'ultimo istruisce le istanza OVS di incapsulare pacchetti nei tunnel VXLAN in accordo alle istanze delle reti virtuali.
@@ -1589,11 +1590,11 @@ I tunnel VXLAN sono utilizzati da Neutron alla stessa maniera in cui vengono uti
 \textit{Cinder} è il componente responsabile della gestione di \textbf{volumi}. Ogni macchina virtuale ha un hard drive di default in cui è salvato il sistema operativo. Se una macchina virtuale richiede uno storage aggiuntivo, possono essere dinamicamente creati volumi addizionali di storage e aggiunti ad un'istanza. Questi volumi sono visti come hard drive virtuali dalla macchina virtuale. \\
 Un hard drive virtuale è salvato nel file system come un'immagine (un file o un oggetto). \\
 \textit{Cinder} è responsabile della gestione di queste immagini e di esporle alle macchine virtuali. Un hard drive virtuale è esposto dall'hypervisor, che accede agli hard drive virtuali attraverso il protocollo \textit{iSCSI}. \\
-\textbf{iSCSI} è uno standard di archiviazione di rete basato su protocollo Internet che fornisce accesso a livello di blocco all'archiviazione. % da chiarire con la registrazione
+\textbf{iSCSI} (si prouncia aiscasi) è uno standard di archiviazione di rete basato su protocollo Internet che fornisce accesso a livello di blocco all'archiviazione.
 Cinder salva le immagini di volume nel file system locale del nodo in cui il servizio è installato, oppure in un file system cloud.
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.4]{img/Cinder.png}
+    \includegraphics[scale=0.5]{img/Cinder.png}
     \caption{Cinder}
 \end{figure}\noindent
 \paragraph{Architettura di Cinder}
@@ -1752,7 +1753,7 @@ I container possono essere usati per preparare un ambiente virtualizzato in cui 
 In più i container possono essere facilmente spediti e installati su differenti macchine utilizzando un sistema di distribuzione ad-hoc che si prende cura di distribuire e installare le immagini su differenti macchine. Un esempio di questo è \textit{Docker}.
 
 \subsubsection{Kubernetes}
-Kubernetes è un sistema software implementato da \textit{Google}, consente di implementare e gestire facilmente applicazioni containerizzate su di esso. \\ Un'applicazione contanerizzata è un'applicazione i cui componenti (servizi indipendenti) sono distribuiti e spediti come contaniner differenti. \\
+Kubernetes è un sistema software implementato da \textit{Google}, consente di implementare e gestire facilmente applicazioni containerizzate su di esso. \\ Un'applicazione containerizzata è un'applicazione i cui componenti (servizi indipendenti) sono distribuiti e spediti come contaniner differenti. \\
 Kubernetes mira a semplificare completamente il processo generale di distribuzione e gestione dei container che compongono l'applicazione, occupandosi degli aspetti relativi alla scalabilità, tolleranza agli errori, gestione delle risorse, ecc. L'obiettivo è quello di offrire un'infrastruttura IaaS leggera per distribuire le applicazioni in un modo semplice ed efficace, cosicché i programmatori possono occuparsene senza pensare ad altri aspetti. \\ 
 Il team operativo è sempre richiesto, in questo caso, tuttavia, è responsabile di mantenere e far girare l'infrastruttura di Kubernetes. \\
 Kubernetes è una piattaforma distribuita composta da un nodo \textbf{master} e un numero variabile di nodi \textbf{worker}. I nodi di Kubernetes possono essere installati direttamente sui server fisici o possono essere installati su piattaforme cloud su macchine virtuali. \\
@@ -1764,11 +1765,13 @@ Attraverso l'interfaccia, il programmatore può specificare che alcuni servizi d
     \caption{Kubernetes}
 \end{figure}\noindent
 In più alla configurazione di ogni componente, il programmatore deve specificare il numero desiderato di istanze in modo da assicurare la scalabilità. La piattaforma si prenderà cura di replicare ogni componente e di bilanciare il carico del traffico tra loro, per assicurare scalabilità. La piattaforma poi, monitorerà lo stato di ogni componente e gestirà i fallimenti: in caso di fallimento di un'istanza (o fallimento del nodo \textit{worker} su cui è eseguita) la piattaforma si preoccupa di replicare l'istanza con una nuova.
+
 \paragraph{Vantaggi di Kubernetes}
 Kubernetes toglie ai programmatori l'impegno dell'implementazione di funzionalità legate all'infrastruttura. La piattaforma si prende cura di implementare funzionalità come lo "scaling", il bilanciamento del carico e un meccanismo di auto-riparazione. Conseguentemente, i programmatori possono concentrarsi sulla progettazione dell'applicazione senza perdere tempo per capire come integrare l'applicazione nell'infrastruttura. \\
 I compiti del team operativo sono, invece, alleggeriti: non si devono più preoccupare della distribuzione dei componenti, configurarli e successivamente risolvere i fallimenti, quelle funzionalità sono gestite dalla piattaforma stessa. In più, Kubernetes può ottenere un miglior utilizzo delle risorse disponibili nell'infrastruttura. 
+
 \paragraph{Architettura del Cluster}
-Il nodo \textit{master} implementa il \textit{piano controllo}, che è responsabile di controllare il cluster. Ogni componente del piano controllo può essere installato su un singolo nodo master, possono essere splittati tra nodi differenti o possono essere replicati per garantire alta affidabilità. %questa frase va chiarita con la registrazione.
+Il nodo \textit{master} implementa il \textit{piano controllo}, che è responsabile di controllare il cluster. Ogni componente del piano controllo può essere installato su un singolo nodo master, oppure splittato tra nodi differenti o replicato per garantire alta affidabilità. 
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.4]{img/architettura kubernetes.png}
