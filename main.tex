@@ -5,6 +5,7 @@
 \usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=3.5cm,right=3.5cm]{geometry}
 \usepackage{wrapfig}
 \usepackage[bottom]{footmisc}
+\usepackage{listings}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{tikz}
@@ -1949,6 +1950,249 @@ Dopodiché, introduciamo i \textbf{partitioner} per dividere in modo bilanciato 
 
 \newpage
 \section{Hadoop}
+\subsection{Installazione di Hadoop}
+Generalmente Hadoop può essere eseguito in 3 modalità:
+\begin{enumerate}
+    \item \textbf{Modalità Standalone (o locale):} 
+    \begin{itemize}
+        \item Non ci sono daemons utilizzati in questa modalità.
+        \item Hadoop utilizza il file system locale come sostituto del file system HDFS.
+        \item I job eseguiranno come se ci fosse 1 mapper e 1 reducer.
+    \end{itemize}
+    \item \textbf{Modalità Pseudo-Distribuita:}
+    \begin{itemize}
+        \item Tutti i daemons eseguono su una singola macchina.
+        \item Questa impostazione imita il comportamento di un cluster
+        \item Tutti i daemons eseguono sulla macchina locale utilizzando il protocollo HDFS.
+        \item Ci possono essere multipli mapper e reducer (1 reducer di default).
+    \end{itemize}
+    \item \textbf{Modalità Completamente Distribuita:}
+    \begin{itemize}
+        \item Questo è il modo in cui Hadoop esegue sui cluster reali. 
+        \item Tutti i daemons eseguono sui cluster utilizzando il protocollo HDFS.
+        \item Ci sono multipli mapper e reducer (1 reducer di default)
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Esecuzione dei programmi in Hadoop}
+Tipicamente, i programmi di Hadoop sono sviluppati con editor di testo o un IDE; ma il vero debugging deve essere eseguito su Hadoop senza un IDE. Una volta che è compilato, un programma Hadoop viene impacchettato in un file \textit{JAR} ed è inviato ad un cluster Hadoop. \\
+Su un client, si deve specificare dove i daemons di Hadoop e HDFS stanno eseguendo.
+
+\subsection{Terminologia di Hadoop}
+\begin{itemize}
+    \item Un \textbf{job} MapReduce è una unità di lavoro che il client vuole che sia eseguito. Consiste di:
+    \begin{itemize}
+        \item Dati input.
+        \item Programma MapReduce.
+        \item Informazioni di configurazione.
+    \end{itemize}
+    \item Hadoop esegue i job MapReduce dividendoli in \textbf{task}.
+    \begin{itemize}
+        \item Ci sono due tipi di task: \textbf{map task} e \textbf{reduce task}.
+        \item I task sono schedulati utilizzando \textbf{YARN} (Yet Another Resource Negotiation) ed eseguono sui nodi del cluster.
+        \item Se un task fallisce, sarà automaticamente rischedulato per eseguire su un nodo differente.
+    \end{itemize}
+    \item Hadoop divide l'input in un job MapReduce, in pezzi di grandezza fissata, chiamati \textbf{input splits}.
+    \item Hadoop cre una \textit{map task} per ogni split, che esegue una funzione map definita dall'utente per ogni \textbf{record} nello split.
+\end{itemize}
+
+\subsection{Tipi di Hadoop}
+I programmatori specificano 2 funzioni:
+\begin{itemize}
+    \item \textit{Funzione map:} da una coppia \texttt{[key (K1), value (V1)]} a una lista di coppie \texttt{[key (k2), value (V2)]}.
+    \item \textit{Funzione reduce:} da una coppia \texttt{[key (K2), value (V2)]} a una lista di coppie \texttt{[key (K3), value (V3)]}.
+\end{itemize}
+\begin{lstlisting}
+public class Mapper<K1, V1, K2, V2> {
+    public class Context extends MapContext<K1, V1, K2, V2> {
+        // ...
+    }
+    protected void map(K1 key, V1 value, Context context) 
+            throws IOException, InterruptedException {
+       // ...
+    }
+}
+
+public class Reducer<K2, V2, K3, V3> {
+    public class Context extends ReducerContext<K2, V2, K3, V3> {
+        // ...
+    }
+    protected void reduce(K2 key, Iterable<V2> values, Context context)
+            throws IOException, InterruptedException {
+        // ...
+    }
+}
+\end{lstlisting}
+\begin{itemize}
+    \item \textit{Funzione map:} da una coppia \texttt{[key (K1), value (V1)]} a una lista di coppie \texttt{[key (K2), value (V2)]}.
+    \item \textit{Funzione combiner:} da una coppia \texttt{[key (K2), value (V2)]} a una lista di coppie \texttt{[key (K2), value (V2)]}.
+    \item \textit{Funzione reduce:} da una coppia \texttt{[key (K2), value (V2)]} a una lista di coppie \texttt{[key (K3), value (V3)]}.
+    \item \textit{Funzione partitioner:} da una coppia \texttt{[key (K2), value (V2)]} a \texttt{integer}.
+\end{itemize}
+Se viene utilizzata una funzione combiner, deve avere la stessa forma di una funzione reduce. La funzione combiner è un'implementazione del reducer, eccetto i tipi degli output che sono chiavi intermedie e tipi valori (K2 e V2). \\
+Spesso, le funzioni combiner e reduce sono le stesse, in quel caso K3 è la stessa di K2 e V3 è la stessa di V2. \\
+La funzione partition opera su chiavi intermedie e tipi valori (K2 e V2) e ritorna l'indice di partizione. In pratica, la partizione è determinata totalmente dalla chiave (il valore è ignorato):
+\begin{lstlisting}
+public abstract class Partitioner<K2, V2>{
+    public abstract int getPartition(K2 key, V2 value, int numPartitions);
+}
+\end{lstlisting}
+
+\subsection{Configurazione dei Job in Hadoop}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{img/Configurazione job hadoop.png}
+    \caption{Configurazione dei job in Hadoop}
+\end{figure}\noindent
+Il "type erasure" di Java significa che le informazioni sul tipo non sono sempre presenti a runtime, quindi Hadoop deve darli esplicitamente. \\
+I tipi di input sono settati dal formato degli input: per esempio un \texttt{TextInputFormat} genera chiavi del tipo \texttt{LongWritable} e valori di tipo \texttt{Text}. Gli altri tipi sono settati esplicitamente chiamando i metodi sul Job. \\
+Se non sono settati esplicitamente, i tipi intermedi passano automaticamente ai tipi degli output (finali), che di default sono \texttt{LongWritable} e \texttt{Text}.
+\begin{itemize}
+    \item Per esempio, se K2 e K3 sono le stesse, non c'è bisogno di chiamare \texttt{setMapOutputKeyClass()}.
+    \item Similmente, se V2 e V3 sono gli stessi, si deve usare soltanto \texttt{setOutputValueClass()}.
+\end{itemize}
+Per il "type erasure", è possibile configurare un job Hadoop con tipi incompatibili, perché la configurazione non è controllata a runtime.
+
+\subsection{Configurazione di default di Hadoop}
+L'unica configurazione che deve essere settata è un path di input e uno di output. 
+\begin{itemize}
+    \item Il \textbf{formato input di default} è \texttt{TextInputFormat}. La chiave output è del tipo \texttt{LongWritable} e il valore di output è di tipo \texttt{Text}.
+    \item Il \textbf{mapper di default} è la classe \texttt{Mapper}, che scrive le chiavi di input e i valori non cambiati nell'output. La chiave di output è \texttt{LongWritable} e il valore di output è di tipo \texttt{Text}.
+    \item Il \textbf{reducer di default} è la classe \texttt{Reducer}, che scrive semplicemente tutti i suoi input sui suoi output.  La chiave di output è \texttt{LongWritable} e il valore di output è di tipo \texttt{Text}.
+    \item Il \textbf{partitioner di default} è \texttt{HashPartitioner}, che fa la hash di una chiave intermedia per determinare a quale partizione appartiene la chiave. Ogni partizione è processata da un task "reduce". Il numero di partizioni è uguale al numero di task "reduce" per il job. Di default c'è un singolo reducer, quindi una singola partizione.
+    \item Non si setta il numero di task "map". Il numero è uguale al numero di splits in cui l'input è diviso. Dipende dalla grandezza dell'input e dalla grandezza dei blocchi del file (se è HDFS).
+\end{itemize}
+
+\subsection{Serializzazione in Hadoop}
+La \textit{serializzazione} è il processo di conversione di un oggetto strutturato in uno stream di byte, per la trasmissione attraverso una rete o per scriverlo su uno storage persistente. \\
+La \textit{de-serializzazione} è il processo opposto, di conversione di uno stream di byte in un oggetto strutturato. \\
+La serializzazione è utilizzata in 2 aree completamente distinte del processing di dati distribuito:
+\begin{itemize}
+    \item per la comunicazione tra processi.
+    \item per lo storage persistente.
+\end{itemize}
+In Hadoop, la comunicazione tra processi tra nodi nel sistema è implementata utilizzando \textbf{remote procedure calls (RPCs)}. \\ 
+Hadoop utilizza il suo formato di serializzazione chiamato \textbf{Writables}: è compatto e veloce, non è facile da estendere o da usare da linguaggi diversi da Java. Ci sono anche altri frameworks di serializzazione supportati in Hadoop come \textit{Avro, Thrift, Photobuffers}.
+
+\subsection{Input in Hadoop}
+Un \textbf{input split} è una porzione dell'input che è processata da un singolo task map. Ogni split è diviso in records, il task map processa ogni record, una coppia chiave-valore, alla volta. \\
+Split e record sono \textbf{logici}: non è richiesto che siano file, anche se comunemente lo sono. In un contesto database, uno split potrebbe corrispondere ad un range di righe di una tabella e un record ad una riga in quel range. Gli input split sono rappresentati in Java dalla classe \texttt{InputSplit}. \\
+Un \texttt{InputSplit} ha una lunghezza espressa in bytes e un set di locazioni di storage. Uno split non contiene dati di input, è soltanto un riferimento ai dati. Le locazioni di storage sono utilizzate da Hadoop per piazzare task map più vicini possibile ai dati split. La grandezza è utilizzata per ordinare gli split, così da avere il più grande processato per primo, per minimizzare il runtime del job. \\
+\texttt{InputSplits} sono creati da un'implementazione dell'interfaccia \texttt{InputFormat}.
+\begin{lstlisting}
+public abstract class InputFormat<K, V>{
+    public abstract List<InputSplit> getSplits(JobContext context)
+        throws IOException, InterruptedException;
+    public abstract RecordReader<K, V> createRecordReader(InputSplit split, 
+    TaskAttemptContext context)
+        throws IOException, InterruptedException;
+}
+\end{lstlisting}
+Il client che esegue il job calcola gli split per il job chiamando la \texttt{getSplits()}. Li manda al master dell'applicazione, che utilizza le sue locazioni di storage per schedulare task map che li processeranno sul cluster. \\
+Il task map passa lo split al metodo \texttt{createRecordReader()} all'InputFormat per ottenere un \texttt{RecordReader} per quello split. \\
+Un \texttt{RecordReader} è poco più di un iteratore sui record, il map task utilizza uno di questi per generare coppie chiave-valore, che sono passati alla funzione map.
+
+\subsection{I metodi "setup" e "cleanup"}
+È normale volere che il \texttt{Mapper} o \texttt{Reducer} eseguano un po' di codice prima della chiamata ai metodi \texttt{map()} o \texttt{reduce()} per la prima volta. Si può inizializzare strutture dati, leggere dati da un file esterno o settare parametri. \\
+Il metodo \texttt{setup()} esegue prima che vengano chiamati i metodi \texttt{map()} o \texttt{reduce()} per la prima volta.
+\begin{lstlisting}
+public void setup(Context context)
+\end{lstlisting}
+Similmente, si vorrebbe poter fare alcune azioni dopo che tutti i record sono stati processati dal \texttt{Mapper} o \texttt{Reducer}. \\
+Il metodo \texttt{cleanup()} è chiamato prima che i \texttt{Mapper} o \texttt{Reducer} terminino.
+\begin{lstlisting}
+public void cleanup(Context context)
+\end{lstlisting}
+
+\subsection{Passaggio di parametri}
+\begin{lstlisting}
+public class MyDriverClass {
+    public int main(String[] args) throws Exception {
+        int value = 42;
+        Configuration conf = new Configuration();
+        conf.setInt ("paramname", value);
+        Job job = new Job(conf);
+        // ...
+        return job.waitForCompletion(true);
+    }
+}
+
+public class MyMapper extends Mapper{
+    public void setup(Context context){
+        Configuration conf = context.getConfiguration(); 
+        int myParam = conf.getInt("paramname", 0);
+        // ...
+    }
+    
+    public void map...
+}
+\end{lstlisting}
+
+\subsection{Hadoop Distributed File System}
+
+\subsubsection{Requirements del File System}
+\begin{itemize}
+    \item Altamente tollerante dei fallimenti: i fallimenti sono la norma rispetto ad essere un'eccezione.
+    \item Throughput alto: potrebbe consistere di centinaia di macchine server, ognuna che salva parte del file dei dati del sistema.
+    \item Utilizzabile per applicazioni con grandi dataset. Il tempo di lettura dell'intero file è più importante della lettura del primo record.
+    \item Accesso in streaming ai dati del file system.
+    \item Può essere costruito su hardware di qualsiasi tipo.
+\end{itemize}
+
+\subsubsection{Organizzazione del File System}
+I file sono divisi in chunks (o blocchi), tipicamente di 64/128 megabytes. I blocchi sono replicati su differenti nodi computazionali (tipicamente 3 o più). I nodi che contengono le copie di un blocco sono locate su "rack" differenti. \\
+La grandezza del blocco e il grado di replica può essere deciso dall'utente. Un file speciale (il nodo master) salva, per ogni file, la posizione dei blocchi. Il nodo master è a sua volta replicato e una directory (o albero) per il file system sa dove trovare il nodo master. La directory stessa è replicata. \\
+Tutti partecipanti che utilizzano DFS sanno dove sono le copie della directory. 
+
+\subsubsection{Blocchi}
+Un blocco è il minimo ammontare di dati che può essere letto o scritto. Sono tipicamente di pochi KB. I blocchi di un disco normalmente sono da 512 bytes, mentre quelli di HDFS sono molto più grandi, di default 64 MB: a differenza dei file system, file più piccoli non occupano tutta la dimensione del blocco da 64MB. \\
+L'astrazione del blocco consente di avere file più grandi del blocco, di non avere la necessità di salvarli sullo stesso disco, semplifica il sottosistema di storage, si applica bene per le repliche e le copie possono essere trasparenti al client.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{img/Blocchi.png}
+    \caption{Blocchi su Hadoop}
+\end{figure}\noindent
+
+\subsubsection{Namenodes e Datanodes}
+È un'architettura \textbf{master/slave}. Il cluster DFS consiste in un singolo \textit{name node}, un master server che gestisce il namespace del file system e regola gli accessi ai files dei clients. \\
+Ci sono i \textit{data nodes}, tipicamente uno per nodo nel cluster. Un file è splittato in uno o più blocchi e set di blocchi sono salvati in data nodes. I \textit{data nodes} gestiscono lo storage del nodo in cui vengono eseguiti. Servono letture, richieste di scrittura, creazione di blocchi, cancellazione e repliche attraverso istruzioni dal \textit{name node}.
+
+\paragraph{Architettura HDFS}
+Inizialmente i Datanode mandano messaggi di "hello" al Namenode in modo da annunciarsi. \\
+Scrittura di un file "foo.bar":
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/architettura HDFS.png}
+\end{figure}\noindent
+
+\paragraph{Letture e Scritture}
+Anatomia di letture e scritture con questa architettura:
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/lettura.png}
+    \caption{Anatomia di una lettura}
+\end{figure}\noindent
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/scrittura.png}
+    \caption{Anatomia di una scrittura}
+\end{figure}\noindent
+
+\paragraph{Topologia di rete e Hadoop}
+\begin{itemize}
+    \item La prima replica è sullo stesso nodo del client. Per client che vengono eseguiti all'esterno del cluster, si sceglie un nodo a caso.
+    \item La seconda replica è in un rack differente dal primo, scelto a caso.
+    \item La terza replica è sullo stesso rack del secondo, ma su un nodo differente scelto a caso.
+    \item Altre repliche sono messe in nodi a caso nel cluster.
+\end{itemize}
+Il sistema cerca sempre di evitare di piazzare troppe repliche nello stesso nodo/rack.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/Topologia di rete hadoop.png}
+    \caption{Topologia di rete Hadoop}
+\end{figure}\noindent
+
 \section{Spark}
 
 \end{appendices}
