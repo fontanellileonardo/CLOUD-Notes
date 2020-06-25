@@ -5,6 +5,7 @@
 \usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=3.5cm,right=3.5cm]{geometry}
 \usepackage{wrapfig}
 \usepackage[bottom]{footmisc}
+\usepackage{amssymb}
 \usepackage{listings}
 \usepackage{booktabs}
 \usepackage{tabularx}
@@ -91,7 +92,6 @@ Il \textit{cluster head} poteva rappresentare un single point of failure pertant
 Agli inizi degli anni 90 grazie a nuove tecnologie si passò al Cloud computing.
 
 \subsection{Servizi e Ruoli nel Cloud}
-pacchetto A02\\ \\
 I servizi cloud sono implementati grazie alle risorse (RAM e CPU) fornite dalle cloud infrastructure, possono essere loro stessi un’applicazione o offrire un servizio.\\
 Quando implementa un’applicazione solitamente espone un’interfaccia accessibile dalle pagine web, quando invece implementa un servizio sfruttato da altre applicazioni, queste accedono al servizio tramite interfacce API.  
 
@@ -776,24 +776,22 @@ Intel e AMD supportano solo un livello di virtualizzazione. Per ulteriori livell
 
 \newpage
 \subsection{Lightweight Virtualization}
-PACCHETTO B05\\ \\
-
 \paragraph{Paravirtualization}
 La Full Virtualization richiede che sia virtualizzata l'intera architettura, l'hardware virtuale è esposto alla VM dove il OS gira \textbf{immutato}. Le istruzioni del Guest OS che non possono essere eseguite direttamente vengono emulate dalla VMM, quindi senza il supporto hardware l'emulazione viene eseguita ogni volta che si presentano questo tipo di istruzioni portando anche a un overhead significativo.\\
 Un approccio alternativo alla Full Virtualization, prima che nascesse il supporto hardware, è la paravitualization. Abbiamo sempre la VMM ma l'hypervisor è implementato partendo dalla assunzione che il \underline{guest OS può essere modificato ed è a conoscenza del fatto di}\\ \underline{star girando all'interno di una VM}. Le modifiche del Guest OS sono limitate solitamente al kernel. Una parte delle funzioni che prima erano implementate dall'hypervisor ora sono state spostate al Guest OS in modo da poter aumentare la performance.\\
 Lo scopo è quello di introdurre delle modifiche al Guest OS in modo che si possa impedire al OS di eseguire istruzioni che non possono essere eseguite direttamente (Esempio I/O instructions). Queste istruzioni vengono sostituite con delle chiamate a delle API specifiche esposte dal VMM attraverso una interfaccia chiamata Virtualization Layer. Il VMM è responsabile dell'implementazione di queste funzioni, come creare una rappresentazione virtuale dell'hardware e infine gestire l'hardware reale.\\
 Quindi in questa architettura abbiamo ancora un VMM che ha il controllo sul sistema hardware ma espone una interfaccia attraverso la quale il Guest OS potrà interagirci e implementare alcune priviledge instrunctions.\\
 \begin{figure}[H]
-\centering
-\includegraphics[scale=0.5]{img/Virt_tech/17.png}
-\caption{Paravirtualization Architecture}
+    \centering
+    \includegraphics[scale=0.3]{img/Virt_tech/17.png}
+    \caption{Paravirtualization Architecture}
 \end{figure}
 L'emulazione viene evitata andando a modificare il Guest OS e andando a invocare le "Hypercalls", funzioni esposte dal VMM che vanno a sostituire le istruzioni non virtualizzabili. Il codice delle Hypercalls e il VMM vengono eseguiti in system mode, quindi possono andare ad eseguire istruzioni privilegiate e interagire direettamente con l'hardware. Questo permette di ridurre l'overhead dato che non ci saranno i context switch (sono eseguiti in system mode).
 \begin{figure}[H]
-\centering
-\includegraphics[scale=0.5]{img/Virt_tech/18.png}
-\caption{Paravirtualization Implementation}
-\end{figure}
+    \centering
+    \includegraphics[scale=0.3]{img/Virt_tech/18.png}
+    \caption{Paravirtualization Implementation}
+\end{figure}\noindent
 Pro della Paravitualizzazione:
 \begin{itemize}
     \item Non essendoci più uno context switch frequente da OS Guest a Hypervisor (evitando anche l'emulazione) la virtualizzazione ha avuto un significativo aumento nelle perfomance
@@ -809,9 +807,9 @@ Xen è l'hyoervisor più popolare basato su paravirtualizzazione. Era stato rila
 Xen è un kernel molto piccolo che si è isolato per primo sulla macchina (???) e ottiene il vantaggio di un controllo diretto dell'hardware. Sopra a Xen, con un livello di privilegio più basso, abbiamo i così detti domini. Ci possono essere tanti domini quanti sono necessari, all'interno di ognuno possiamo andare a far girare un intero OS con le sue applicazioni.\\
 Un dominio speciale, il Dom0, ha accesso alle API di Xen e può andare a creare o distruggere altri domini. All'interno del Dom0 qualsiasi OS Linux può essere istallato e possono essere sviluppati tools personalizzati che vanno a gestire altri domini. I domini possono avere accesso diretto ad alcuni dispositivi I/O, o possono usare dei dispositivi fully virtualized, o possono usare dei dispositivi paravirtualizzati.
 \begin{figure}[H]
-\centering
-\includegraphics[scale=0.5]{img/Virt_tech/19.png}
-\caption{Xen Hypervisor}
+    \centering
+    \includegraphics[scale=0.4]{img/Virt_tech/19.png}
+    \caption{Xen Hypervisor}
 \end{figure}
 Uno use-case per la virtualizzazione è poter andare a condividere le risorse hardware tra differenti applicazioni sullo stesso sistema in modo sicuro. L'isolamento delle applicazioni dovrebbe essere fatto dallo stesso OS, comunque, recentemente i OS sono diventati sempre meno efficaci nel garantire l'isolamento. Come conseguenza la configurazione più tipica nel garantire l'isolamento è far girare le applicazioni in differenti VMs. L'overhead portato dalla virtualizzazione non è trascurabile, sia in termini di memoria che di processing time per via del VMM e del guest OS in cui la applicazione gira. Solitamente differenti VMs condividono lo stesso guest OS, come risultato potremmo avere multiple istanze dello stesso OS che girano sullo stesso hardware. (Solitamente in un sistema virtualizzato il guest OS e l'Host OS hanno lo stesso sistema operativo, esempio Linux, e con la virtualizzazione potremmo avere molte full virtualizations tutte con lo stesso OS -> l'overhead è significativo).
 \\
@@ -824,9 +822,9 @@ La Paravirtualizzazione è ugualmente caratterizzata dall'overhead introdotto da
 Un differente approccio per la virtualizzazione leggera è stato proposto recentemente: \textbf{Operating System Virtualization} o \textbf{Shared Kernel Approaches}. Il suo obiettivo è quello di avere un approccio leggero che vada a minimizzare l'overhead portato dal far girare più VMs con lo stesso OS sullo stesso sistema. Con il OS virtualization l'hypervisor viene rimosso: i server virtuali sono abilitati dal kernel del sistema operativo della macchina fisica. Il kernel del OS è condiviso tra tutti i server virtuali che girano su di esso e dato che questo è condiviso tutte le VMs condivideranno lo stesso OS, che dovrà implementare le istanze dello user space logicamente distinte. Degli esempi sono FreeBSD Jails o Linux Containers.
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.5]{img/Virt_tech/20.png}
+\includegraphics[scale=0.4]{img/Virt_tech/20.png}
 \caption{Xen Hypervisor}
-\end{figure}
+\end{figure}\noindent
 Pro:
 \begin{enumerate}
     \item La virtualizzazione del OS è più leggera per quanto riguarda l'overhead dato che tutti i server virtuali condivideranno la stessa istanza del kernel. Posso avere anche differenti distribuzioni dello stesso OS la cosa importante è che questi abbiano lo stesso kernel.
@@ -847,7 +845,7 @@ Per questo i containers non sono full virtualization.
 I containers non sono macchine virtuali in generale: i processi che girano al loro interno sono dei normali processi che girano nel kernel dell'host. Di conseguenza non vi è nessun kernel del guest che gira all'interno del container. Per questo motivo non è possibile eseguire un sistema operativo arbitrario in un container. Nel momento in cui il kernel è condiviso con l'host, deve essere lo stesso del host OS. Il vantaggio più grande nell'usare i containers rispetto alle macchine virtuali è la performance: Non vi è alcuna penalità di prestazione nell'eseguire una applicazione all'interno di un container rispetto ad eseguirlo su un host.\\
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.5]{img/Virt_tech/21.png}
+\includegraphics[scale=0.4]{img/Virt_tech/21.png}
 \caption{Containers VS Virtualization}
 \end{figure}
 I containers di Linux sono i più famosi e più utilizzati per virtualizzare il OS. Sono implementati usando due features del kernel: names-spaces e control group. Queste due features si occupano di creare un spazio isolato per far girare l'applicazione che può accedere solamente a un set di risorse (o processi) alle quali è stato dato il permesso di accedere.\\
@@ -875,14 +873,143 @@ I containers hanno avviato un nuovo modello di cloud computing: Serveless comput
 
 \newpage
 \section{Applicazioni Cloud}
-PACCHETTO C01
-nota: discorsi di prime slide poi passare alla sottosezione\\ \\
+Per quanto visto finora, il cloud è un’infrastruttura che offre la possibilità di creare VMs. Ognuna di esse ha una o più Virtual CPUs, la propria RAM e un hard-drive locale, sul quale è installato il \textit{guest OS}, eseguito sulla VM. 
+Le VMs hanno anche un adattatore di rete virtuale attraverso il quale esse possono comunicare con altre VMs, tramite LAN virtuale o fisica, o con \textit{hosts} esterni, via Internet.
+Le VMs possono avere accesso ad un \textit{cloud storage}, cioè ad uno spazio di archiviazione, fisico o virtualizzato, condiviso tra tutte le VMs, solitamente accessibile tramite la LAN che connette le VMs.
+
+\paragraph{Applicazioni tradizionali}
+Le applicazioni progettate e implementate seguendo il modello computazionale tradizionale hanno una struttura molto semplice: da un lato abbiamo un \textit{application server} centrale (server fisico) su cui viene eseguito il servizio che implementa la logica dell’applicazione e nel suo hard disk locale vengono salvati tutti i dati, dall’altro un insieme di \textit{clients} (\textit{browser web} o applicazioni \textit{mobile/desktop}) che forniscono all’utente un’interfaccia per accedere al sistema. Clients e application server comunicano generalmente usando la rete (LAN o WAN). \\ \\Il primo passo per passare ad applicazioni cloud è quello di trasferire l’intera implementazione dell’application server già esistente, servizi e dati, dall’hardware fisico alle VMs nel cloud.
+L’architettura dell’intero sistema rimarrà la stessa, da un lato rimane l’application server, ora installato sul cloud, e dall’altra i clients che interagiscono con il precedente sempre tramite la rete.
+Trasferire semplicemente un servizio già esistente sul cloud, mantenendone però l’architettura tradizionale, permette di avere alcuni benefici, come la riduzione dei costi, ma non sfrutta a pieno le potenzialità di tale sistema.
 
 \subsection{Architetture Cloud}
+Le applicazioni cloud sono generalmente implementate come sistemi multilivello, in cui differenti VMs eseguono differenti funzionalità e possono essere distribuite diverse alternative, a seconda dei requisiti e casi d’uso dell’applicazione. 
+L’architettura più semplice consiste in due livelli, il primo, l’application server, in cui vengono gestite le richieste dei clients, e un secondo livello per la gestione dati (\textit{Database Tier}), con il quale interagisce il precedente per recuperare o salvare dati come specificato nelle richieste, così da separare le due funzionalità. \\Può essere aggiunto un ulteriore livello che si occupi esclusivamente dell’archiviazione dei dati (\textit{Storage Tier}), che fornisce uno spazio di archiviazione condiviso accessibile da diverse VMs.
+Quando il livello applicazione riceve una richiesta e necessita di recupare un dato, inoltra la richiesta ad una delle VM nel livello database che a sua volta interagisce con il livello di archiviazione per il recupero del dato.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{img/base_arch.png}
+\caption{Architettura base per Applicazioni Cloud}
+\end{figure}
 
+Il risultato in generale sarà un’architettura multilivello in cui il servizio viene fornito al client attraverso una \textit{catena di interazioni} (client/server) tra i server dei diversi livelli che sono connessi tramite LAN e usano un protocollo applicazione che può essere implementato da un software di middleware.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{img/interaction_chain.png}
+\caption{Interazione tra i livelli}
+\end{figure}
+\paragraph{Compute Cluster}
+Il set delle VMs appartenenti ai differenti livelli che implementano un’applicazione viene detto \textit{compute cluster} ed è organizzato in maniera tale da eseguire delle operazioni collettive relative ad un singolo grande lavoro. La struttura globale del cluster può essere molto diversa a seconda dei requisiti specifici dell’applicazione e dei casi d’uso.
+I nodi non eseguono molte operazioni di I/O se non quelle necessarie per trasferire i dati tra i nodi del cluster.
+Essi comunicano tra loro (tra VMs dello stesso livello o di diversi livelli) usando un software di middleware.
+
+\subsubsection{High-Availability Clusters}
+Essi sono cluster progettati per essere tolleranti ai guasti e supportano l’esecuzione di quei servizi che richiedono di essere sempre (o per la maggior parte del tempo) disponibili. 
+Vengono utilizzati dei nodi ridondanti così da evitare i \textit{single-point-of-failure}.
+Maggiore è la ridondanza, più elevata sarà la disponibilità, per questo in ogni livello dovrebbero esserci diversi nodi in grado di eseguire le stesse operazioni o fornire lo stesso servizio.
+
+\paragraph{Architettura negli HA Clusters} L’architettura utilizzata è di tipo \textit{master/slave}: tra i nodi ridondanti di un livello viene selezionato un master e tutti gli altri saranno settati come \textit{slaves}.
+Il master svolge la funzionalità assegnata ad un certo livello mentre gli slaves fungono da backup. In caso di fallimento del master ne viene selezionato momentaneamente un altro tra gli slaves tramite procedura di elezione o ordine statico.
+Affinchè le funzionalità di master vengano svolte correttamente anche dal nuovo nodo eletto è necessario includere anche un meccanismo di replica per replicare dati, configurazioni e altre impostazioni anche sugli slaves.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{img/HACluster_Arch.png}
+\caption{Architettura di un High-Availability Cluster}
+\end{figure}
+
+\subsubsection{Load-Balancing Cluster}
+Permettono di migliore l’utilizzo di tutte le risorse disponibili sul cluster, bilanciando il carico delle richieste in arrivo tra tutti i nodi partecipanti. Ciò permette di assicurare la scalabilità, in quanto tutti i nodi si dividono il carico di lavoro, e di migliore le prestazioni, come la riduzione dei tempi di risposta.
+
+\paragraph{Architettura negli LB Clusters} Il bilanciamento del carico è ottenuto introducendo un ulteriore livello tra quello dell’applicazione e quello dei clients (\textit{Balancer Tier}), formato da diverse VMs. I client inviano le richieste ad una di esse che a loro volta le inoltreranno verso una delle VM del livello applicazione, seguendo un certo criterio, per esempio verso quella che attualmente ha meno richieste da servire. La VM del livello applicazione inoltrerà poi la richiesta ad un certo nodo, assegnato, del livello database, così da avere un carico nell’insieme bilanciato.
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{img/LBCluster_Arch.png}
+\caption{Architettura di un Load-Balancing Cluster}
+\end{figure}
+
+\paragraph{Sincronizzazione dei Dati}
+I dati dello stesso livello devono essere coerenti (sincronizzati) tra loro. Un modo per ottenere ciò, evitando l’\textit{overhead} generato invece dalla replica dei dati, è quello di usare un livello di archiviazione condiviso (spostando così la complessità della gestione dei dati condivisi su questo livello). 
+La scelta del metodo da usare dipende dai casi d’uso e dalla quantità di dati da salvare: la replica dei dati tra i nodi dello stesso livello è una soluzione nei casi in cui le informazioni da salvare (e quindi replicare) non siano elevate.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{img/DataSync_Replica.png}
+\includegraphics[scale=0.6]{img/DataSync_SharedStorage.png}
+\caption{Replica dei Dati vs Archiviazione Condivisa}
+\end{figure}
+
+\subsubsection{Compute Intensive Cluster}
+Cluster progettato per analizzare una grande quantità di dati (es. big data analytics). 
+Adotta un approccio \textit{“divide et impera”}:
+\begin{itemize}
+    \item Il task di analisi viene suddiviso in sub-tasks (\textit{\textbf{Jobs}}).
+    \item I dati sono suddivisi in blocchi più piccoli, detti \textit{\textbf{chunk}}, ognuno dei quali viene assegnato ad un \textit{\textbf{job}}.
+    \item Un \textit{job} (ed il relativo \textit{chunk}) viene poi assegnato ad un server (\textit{\textbf{worker}}) per l’analisi.
+    \item Il server esegue le operazioni di analisi sui dati assegnati a restituisce i risultati ad un \textit{\textbf{collector}}.
+    \item Il \textit{collector} rimette insieme tutti i risultati.
+\end{itemize}
+Un esempio di applicazione di questo approccio si ha negli algoritmi di ricerca nel web: i dati del web sono tantissimi per essere gestiti da una sola macchina, perciò i dati da analizzare, per la ricerca di determinate parole chiave, vengono suddivisi in \textit{chunk} e assegnati a differenti \textit{workers}, un \textit{collector} riceve tutti i risultati da questi ultimi e li aggrega.
+\paragraph{Architettura in un CI Cluster}
+Per garantire la scalabilità con un elevato numero di richieste è necessario prima di tutto introdurre un livello \textit{load balancer} (obbligatorio in applicazioni pubbliche come un motore di ricerca). Dopodichè, ogni istanza nel livello applicazione divide i dati in \textit{chunk} e crea una lista di textit{jobs}. Il dataset iniziale è contenuto nello spazio di archiviazione condiviso (\textit{storage tier}) in quanto è impossibile salvare in locale in ogni nodo tutti i dati e garantirne la coerenza (sincronizzazione), per via della dimensione dei dati. I Job sono distribuiti poi tra i vari workers che appartengono ad una infrastruttura distribuita di elaborazione (insieme di VMs), la quale può avere accesso diretto allo Storage Tier, così i nodi del livello applicazione non dovranno inviare interamente i dati ma solo dei puntatori, con i quali i workers potranno poi accedere direttamente alla porzione di informazioni ad essi assegnata nello storage tier, evitando così un overhead nello scambio di dati tra un livello e l'altro.
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{img/CICluster_Arch.png}
+\caption{Architettura in un Compute Intesive Cluster}
+\end{figure}
+
+\paragraph{Adattamento Dinamico}
+Uno dei maggiori vantaggi delle tecnologie cloud, come abbiamo visto, è la possibilità di scalare facilmente quando il carico di lavoro aumenta, sfruttando la scalabilità orizzontale (aumentando il numero di VMs disponibili per processare le richieste).
+Le architetture LB e CI, che contengono un livello di bilanciamento del carico iniziale, si prestano molto bene ad adeguarsi alle continue variazioni dell’ammontare di richieste in arrivo: quando il traffico aumenta nuove VMs vengono create e aggiunte a tale livello, così da ridurre il carico di lavoro su ciascuna di esse. Al contrario, se il traffico diminuisce, le VMs possono essere deallocate, così le risorse non sono sprecate.
+Nell’architettura HA, invece, la scalabilità orizzontale può essere sfruttata per incrementare la ridondanza dei nodi (più macchine virtuali significa più disponibilità) o per ribilanciare il livello in caso d fallimenti.
 
 \subsection{Design di Applicazioni Cloud}
-PACCHETTO C02\\ \\
+Le applicazioni cloud sono sistemi distribuiti: con l’aumentare della loro complessità tutta la logica, funzionalità e dati ad esse collegati vengono distribuiti su differenti sistemi (in questo caso Macchine Virtuali), che includono diversi componenti software capaci di interagire tra loro per fornire un servizio (applicazione) agli utenti. \\Tali sistemi distribuiti sono generalmente \textit{sistemi eterogenei} in cui diversi tipi di risorse (es. diversi processori, ecc) sono integrate per formare un unico sistema. \\Nasce quindi l’esigenza di garantire alle applicazioni \textit{interoperabilità} con l’ambiente disponibile. \\ \\L’implementazione e integrazione di differenti componenti software per l’ambiente cloud è un’operazione complessa che può richiedere molto tempo ed essere costosa, rallentando così anche i tempi di messa in commercio di determinati software. \\Per evitare ciò è necessario utilizzare un approccio comune e rigoroso, nel progettare e sviluppare oggetti software, soprattutto in un ambiente dinamico come il cloud.\\ \\Un software, parte di un’applicazione cloud, dovrebbe essere progettato rispettando i seguenti requisiti:
+\begin{itemize}
+    \item \textbf{Interoperabilità e integrazione}: diversi componenti software possono interagire tra loro e affinché ciò sia possibile occorre che il software esponga un’interfaccia standard, facilmente raggiungibile dagli altri software/componenti dell’applicazione
+	\item \textbf{Scalabilità}:  una delle caratteristiche fondamentali dell’infrastruttura cloud è la possibilità di scalare orizzontalmente con l’aumentare degli utenti, perciò l’applicazione deve essere progettata in maniera tale da poter integrare dinamicamente e facilmente un crescente numero di componenti 
+    \item \textbf{Componibilità}:  l’ambiente su cui si sviluppa il cloud può cambiare rapidamente per via di fallimenti dei componenti, creazione/distruzione delle VM, ecc. Un software non deve dipendere dalla struttura di tale ambiente. Deve essere progettato in modo da non risentire di possibili cambiamenti e continuare a funzionare con componenti differenti senza bisogno di modifiche (o minime).
+\end{itemize}
+
+\subsection{Architettura Service-Oriented}
+Negli ultimi anni, tra i vari modelli di sviluppo per le applicazioni cloud, è emerso un approccio architetturale \textit{orientato ai servizi}, la cosiddetta \textbf{\textit{Service-Oriented Architecture (SOA)}}, che supporta l’interoperabilità dei componenti software, insieme alla modularità e alla loro riusabilità, facilitando la scalabilità orizzontale nelle applicazioni.
+L’architettura orientata ai servizi viene incontro a quelli che sono i principali obiettivi del cloud computing, quali l’ottenimento di un sistema più flessibile, di facile mantenimento e a costi ridotti, in un ambiente estremamente dinamico.\\ \\In questo tipo di modello, ogni componente software è considerato come un \textbf{servizio} a sé stante che implementa funzionalità specifiche.
+Le applicazioni in SOA sono realizzate come \textit{collezioni di servizi}, attraverso componenti software esistenti, in maniera modulare.
+I servizi software possono essere sviluppati usando diversi linguaggi di programmazione ed essere eseguiti su diverse piattaforme, in maniera distribuita. Un’applicazione può sfruttare uno o più di tali servizi e SOA permette di integrare i diversi componenti attraverso un approccio indipendente da linguaggio e piattaforma utilizzati.
+\subsubsection{Architettura}
+I servizi all’interno di un’applicazione comunicano via \textbf{\textit{message passing}}. 
+Ogni messaggio ha uno schema specifico per definire il formato dell’informazione che deve fornire un servizio e come deve avvenirne lo scambio.
+I messaggi sono inviati tra i servizi e ognuno di essi li gestisce diversamente al suo interno.
+
+\begin{figure}[H]
+\centering
+\includegraphics{img/message_passing.png}
+\caption{Schema Message Passing}
+\end{figure}
+
+\paragraph{Ruoli}
+In un’interazione in SOA possiamo distinguere due  ruoli:
+\begin{itemize}
+    \item \textbf{\textit{Consumer Service}}:  invia una richiesta per ricevere un certo servizio tramite message passing
+	\item \textbf{\textit{Provider Service}}:  fornisce al consumatore i risultati richiesti
+\end{itemize}
+Lo stesso servizio può implementare entrambi i ruoli, a seconda della situazione. \\In genere provider e consumatore non dialogano direttamente, dato che il consumatore dovrebbe conoscere a priori l'indirizzo ed il descrittore del provider. Qui entra in gioco un terzo ruolo molto importante, che fa da intermediario tra i due ruoli precedenti:
+\begin{itemize}
+    \item \textbf{\textit{Broker}}: crea una sorta di catalogo su cui sono presenti tutti servizi disponibili (\textit{service catalog}).  \\ Il broker sa quando viene creata un'istanza di un certo provider service perciò ogni volta che un consumatore richiede quel servizio, il broker può assegnare un'istanza di esso tra quelle presenti. Se diversi consumatori richiedono lo stesso servizio, ad ognuno di essere sarà assegnata una diversa istanza di esso.
+    Il broker conosce sempre tutte le istanze disponibili. Se una di esse viene distrutta, è l'istanza stessa che nel suo distruttore manderà un avviso al broker (non è il sistema che lo notifica).
+\end{itemize}
+L'indirizzo e il descrittore del broker sono noti perciò un consumatore può fin da subito interagire con esso. Un servizio client potrà usufruire di un servizio solo se la relativa interfaccia è presente nel broker. Una volta interrogato il broker per uno specifico provider service e ottenuta la sua identità, il client potrà contattarlo ed interagire direttamente con esso.
+\begin{figure}[H]
+\centering
+\includegraphics{img/broker_Arch.png}
+\caption{Architettura in SOA}
+\end{figure}
+
+\paragraph{Vantaggi}
+L'implementazione dei servizi rimane nascosta, dando così la possibilità di risolvere eventuali problemi di implementazione del singolo senza interessare gli altri, almeno fin quando la sua dichiarazione/interfaccia rimane intatta. \\ 
+Questa separazione abilita una funzione di "accoppiamento allentato" (\textit{loose coupling}) che consente di collegare e scollegare i servizi specifici da un'applicazione senza sforzo
+
+
 
 \subsection{Sistemi Distribuiti Message-oriented}
 Le applicazioni cloud sono sviluppate come sistemi distribuiti la cui implementazione è la composizione di diverse funzionalità su differenti VMs. Queste VMs sono raggruppate in strati (tier), dentro ognuno di questi strati, per garantire alta disponibilità e scalabilità, le VMs replicano le loro funzionalità; le richieste dei client vengono ricevute dalle VMs nel primo strato (frontend tier) e successivamente inviate agli altri strati (backend tier). 
@@ -2193,7 +2320,453 @@ Il sistema cerca sempre di evitare di piazzare troppe repliche nello stesso nodo
     \caption{Topologia di rete Hadoop}
 \end{figure}\noindent
 
+\subsection{Gestione Risorse Distribuite in Hadoop}
+\paragraph{Hadoop 1.0}
+\begin{itemize}
+    \item \textbf{Job:} Unità di lavoro che il client vuole che sia eseguito.
+    \item \textbf{Task:} Unità di lavoro che Hadoop schedula ed esegue sui nodi del cluster (map e reduce).
+    \item \textbf{Slot:} Elemento che processa task (map e reduce).
+    \item \textbf{Job tracker:} Accetta job sottoposti da utenti, crea task e assegna task map e reduce ai \textit{Task Tracker}, monitora i task e lo status del \textit{Task Tracker} e riesegue i task che sono falliti.
+    \item \textbf{Task Tracker:} Esegue task map e reduce sotto le istruzioni del \textit{Job Tracker}. Gestisce lo storage e la trasmissione di output intermedi.
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/hadoop1.0.png}
+    \caption{Hadoop 1.0}
+\end{figure}\noindent
+\subparagraph{Limitazioni di Hadoop 1.0} 
+\begin{itemize}
+    \item \textit{Scalabilità:} dato che c'è un solo job tracker, questo diventa un collo di bottiglia. Non più di 4000 nodi e 40000 task concorrenti.
+    \item \textit{Disponibilità:} Il job tracker è un "single point of failure", ogni fallimento tutti i job accodati e in esecuzione. Quindi devono essere sottoposti nuovamente dagli utenti.
+    \item \textit{Utilizzazione delle risorse:} Per il numero di slot predefiniti di map e reduce per ogni task tracker, si hanno problemi di utilizzazione.
+    \item \textit{Limitazioni nell'esecuzioni in applicazioni non-Hadoop:} Si riscontrano problemi nell'analisi real-time e ad eseguire query ad-hoc, dato che Hadoop è batch-driven.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/YARN.png}
+    \caption{Introduzione di YARN}
+\end{figure}\noindent
+
+\paragraph{Benefici di YARN}
+\begin{itemize}
+    \item \textit{Scalabilità:} Dimensione del cluster maggiore di 10000 nodi e più di 100000 jobs concorrenti.
+    \item \textit{Compatibilità:} Le applicazioni sviluppate per Hadoop 1.0, funzionano su YARN.
+    \item \textit{Utilizzazione delle risorse:} Allocazione dinamica delle risorse del cluster.
+    \item \textit{Multi-tenancy:} Può utilizzare motori di accesso ai dati proprietari e open source. Può effettuare analisi real time ed eseguire query ad-hoc. È inoltre utilizzato in molti frameworks distribuiti (come Spark).
+\end{itemize}
+
+\paragraph{Componenti di YARN} YARN fornisce i suoi servizi attraverso due tipi di daemons:
+\begin{itemize}
+    \item \textbf{Resource Manager:} (uno per cluster) per gestire l'utilizzo di risorse attraverso i cluster.
+    \item \textbf{Node Manager:} (uno per nodo nel cluster) per lanciare e monitorare i container.
+\end{itemize}
+Un container esegue un processo specifico per l'applicazione \textit{(application master)} con un set di risorse vincolato (memoria, CPU e così via). \\
+Una richiesta di risorse per un set di container può esprimere: l'ammontare di risorse richieste per ogni container (memoria e CPU) e vincoli locali. Se i vincoli locali non possono essere soddisfatti, non viene allocato niente e il vincoli possono essere allentati. \\
+YARN non fornisce nessun meccanismo di comunicazione per le parti dell'applicazione.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.2]{img/YARNRun.png}
+    \caption{Anatomia dell'esecuzione di un'applicazione YARN}
+\end{figure}\noindent
+
+\paragraph{Applicazione YARN} 
+La durata delle applicazioni YARN può essere classificata in base al modo in cui si associano ai lavori eseguiti dagli utenti:
+\begin{itemize}
+    \item Primo: ogni volta che si sottomette un job, il job è semplicemente un applicazione che viene distribuita on demand. Quando il job è completato, l'applicazione viene distrutta.
+    \item Secondo: si possono riutilizzare i container delle applicazioni. Questo è quello che accade in Spark. Una applicazione per workflow o sessione di job dell'utente. In Spark, ad esempio, si creano un numero di applicazioni per utente e si riusano quelle applicazioni, non si deve ogni volta killare un container e istanziarne uno per ogni job. Si riutilizza il solito e possiamo beneficiarne per molte cose, ad esempio un container può fare cache di dati locali o possono avere bassa latenza dato che sono sempre in esecuzione.
+    \item Terzo: Applicazione a lunga durata che è condivisa da differenti utenti. Questa applicazione spesso agisce come una sorta di ruolo di coordinazione. Per esempio, un'applicazione "master" a lunga esecuzione per lanciare altre applicazioni nel cluster. Questa applicazione "master", intende che l'utente ha una latenza molto bassa.
+\end{itemize}
+
+\paragraph{Scheduling YARN} 
+YARN fornisce una scelta di scheduler configurabili: in generale lo scheduling è un problema "NP-hard", quindi non c'è una policy definita come migliore.
+\begin{itemize}
+    \item \textbf{Scheduler FIFO:} piazza le applicazioni in una coda singola e le esegue in ordine di sottomissione (first in, first out). Facile da comprendere e non necessita di particolari configurazioni. Non fattibile su cluster condivisi. Le applicazioni grandi utilizzeranno tutte le risorse in un cluster, quindi ogni applicazione dovrà aspettare il proprio turno.
+    \item \textbf{Capacity Scheduler:} ha code separate e dedicate, ognuna configurata per usare una data frazione della capacità del cluster. In una coda, le applicazioni sono schedulate utilizzando uno scheduling FIFO.
+    \item \textbf{Fair Scheduler:} dinamicamente bilancia le risorse tra tutti i job in esecuzione. Non c'è bisogno di riservare un set di capacità.
+    \item \textbf{Delay Scheduler:} è supportato sia dal Capacity Scheduler e dal Fair Scheduler. In pratica, attendere un piccolo ammontare di tempo può aumentare le possibilità di aver allocato un container sul nodo richiesto, quindi va ad aumentare l'efficienza del cluster.
+\end{itemize}
+Ogni nodo gestore nel cluster YARN periodicamente manda una richiesta "heartbeat" al gestore delle risorse. Questo "heartbeat" trasporta informazioni riguardo l'esecuzione dei container del nodo gestore e le risorse disponibili per nuovi container. Ogni "heartbeat" è una potenziale oppportunità di scheduling per un'applicazione per eseguire un container.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.2]{img/YARNMapreduce.png}
+    \caption{Anatomia di un'esecuzione di un'applicazione MapReduce}
+\end{figure}\noindent
+
+\paragraph{Tolleranza ai fallimenti}
+\begin{itemize}
+    \item \textbf{Fallimento di un task:} 
+    \begin{itemize}
+        \item Il codice dell'utente nei task map o reduce lancia un'eccezione a runtime. Il task JVM riporta l'errore all'applicazione master genitore prima di uscire. L'applicazione master marca il task come fallito e libera il container.
+        \item Uscita improvvisa del task JVM. Il node manager informa l'applicazione master. Quest'ultima marca il task come fallito e libera il container.
+        \item Task sospesi. L'applicazione master nota che non ha ricevuto aggiornamenti di progressi per un po' di tempo. Il processo JVM relativo al task sarà automaticamente killato dopo questo peridoo di tempo, quindi l'applicazione master marca il task come fallito.
+    \end{itemize}
+    Quando l'applicazione master ha una notifica di un task fallito, rischedula l'esecuzione di quel task e cercherà di evitare di rischedularlo sul nodo gestore che aveva precedentemente fallito.
+    \item \textbf{Fallimento dell'applicazione master:} il gestore delle risorse rileva il fallimento e inizializza una nuova instanza del master da eseguire in un nuovo container (gestito dal nodo gestore). Il client adesso deve richiedere al gestore delle risorse, l'indirizzo della nuova applicazione master (questo processo è trasparente all'utente). Se un'applicazione master MapReduce fallisce due volte, non sarà nuovamente ritentata e il job sarà considerato fallito.
+    \item \textbf{Fallimento del nodo gestore:} Il gestore delle risorse nota che un nodo gestore ha smesso di mandare "heartbeats" da 10 minuti. Quindi, il gestore delle risorse rimuoverà quel nodo dalla lista di nodi su cui può schedulare container. Ogni task o applicazioni master che eseguono su quel nodo che ha fallito, sarà considerato fallito a sua volta. Questi nodi gestori potrebbero anche essere messi in blacklist se il numero di fallimenti è alto. Questa operazione di blacklisting è fatta dall'applicazione master.
+    \item \textbf{Fallimento del gestore delle risorse:} nella configurazione di default, il gestore delle risorse è un punto di fallimento. Per ottenere alta disponibilità, è necessario eseguire una coppia di gestori risorse in una configurazione "attivo-standby". Le informazioni relative a tutte le applicazioni che sono eseguite sono salvate in uno store ad alta disponibilità. Il gestore delle risorse in standby può recuperare lo stato del gestore delle risorse attivo che ha fallito. La transizione di un gestore delle risorse da standby ad attivo è gestita da un controller di "failover". Questo controller, di default utilizza un'elezione di leader per garantire che ci sia soltanto un gestore di risorse attivo alla volta.
+\end{itemize}
+
+\paragraph{Esecuzione speculativa}
+Il problema è che le macchine lente, allungano i tempi di completamento. Il problema potrebbe essere dato dal fatto che altri job potrebbero consumare risorse sulla macchina, oppure che dischi di bassa qualità con errori potrebbero trasferire dati molto lentamente o, infine, altri "brutti" motivi, come ad esempio cache del processore disabilitata all'inizializzazione della macchina. \\
+La soluzione: vicini al completamento, generare copie di backup dei task rimamenti in corso. Qualunque sia il primo a finire, "vince". Questo porta un costo addizionale, una piccola percentuale in più di utilizzo di risorse. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.2]{img/shuffle e sort.png}
+    \caption{Shuffle and Sort}
+\end{figure}\noindent
+
+\newpage
+\section{Design Pattern}
+MapReduce è un framework, non un tool, quindi i problemi che si vogliono risolvere devono essere adattati a questo modello e talvolta può essere complesso (non tutti i problemi possono essere risolti con un approccio MapReduce).\\
+Può succedere infatti che ci sia la necessità di spezzare l'algoritmo in step di:
+\begin{itemize}
+    \item \textbf{Filtraggio:} che avverranno nella fase di mapping.
+    \item \textbf{Aggregazione:} che avverranno nella fase di reduce.  
+\end{itemize}
+E talvolta potrebbe essere richiesti multipli stage di MapReduce.
+In generale l'utilizzo di questo framework è consigliato quando:
+\begin{itemize}
+    \item i file sono molto grandi e vengono aggiornati raramente.
+    \item c'è la necessità di iterare su tutti i file per generare risultati interessanti.  
+    \item il problema può avvantaggiarsi dall'uso di più nodi che lavorano in parallelo.
+\end{itemize}
+Vediamo una serie di Design Pattern risolvibili con il modello MapReduce.
+\paragraph{Riduzione dati intermedi}
+Il bottleneck principale delle applicazioni MapReduce è lo scambio di messaggi tra la fase di mapping e quella di reduce (comunicazione all to all). I dati intermedi vengono salvati localmente e successivamente inviati dai mapper ai reducer sulla stessa rete condivisa. Come possiamo migliorare questa situazione di abuso della rete? Possibili soluzioni:
+\begin{itemize}
+    \item ridurre (comprimere) la quantità di dati passati dai mapper ai reducer.
+    \item utilizzare i combiner.  
+    \item implementare In-Mapper combining, è un trade-off tra l'utilizzo della rete e l'utilizzo della memoria principale.
+\end{itemize}
+Vediamo come funziona quest'ultimo metodo.
+In ogni mapper creo un AssociativeArray (codice img 2) per contare quante occorrenze dello stesso termine ci sono (evitando di passare gli '1') che verranno inviate ai reducer. Se prima (codice img 1) avevo un file "ciao ciao ciao ciao ciao" venivano generate e inviate 5 coppie chiave valore (ciao, '1'), con l'array associativo invece verrebbe generata un'unica coppia chiave valore (ciao, '5'). Bisogna però considerare che così stiamo sfruttando la memoria per salvare l'array (trade-off). \\
+Possiamo fare un ulteriore miglioramento (codice img 3): invece di memorizzare l'array associativo al livello del metodo di map lo facciamo al livello di classe mapper, le chiavi così verranno generate una volta sola nel metodo 'close' quando tutti i documenti saranno stati processati. Questo è utile perchè non sappiamo a priori quanti possono essere i documenti che potrebbero essere moltissimi. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/In_mapper1.PNG}
+    \caption{In-Mapper combining 1}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/In_mapper2.PNG}
+    \caption{In-Mapper combining 2}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/In_mapper3.PNG}
+    \caption{In-Mapper combining 3}
+\end{figure}
+Vediamo pro e contro del 'In-Mapper combining'.
+Vantaggi:
+\begin{itemize}
+    \item risparmio della rete.
+    \item controllo completo sull'aggregazione locale.  
+    \item è garantita la sua esecuzione (nel combiner invece non è garantita).
+    \item efficiente uso delle strutture dati per memorizzare i dati intermedi.
+    \item viene evitata la creazione e distruzione di oggetti non necessari.
+\end{itemize}
+Svantaggi:
+\begin{itemize}
+    \item sfrutto la memoria che può diventare il bottleneck (possibile soluzione l'utilizzo del 'foot-printing': monitoriamo la memoria, quando sta per raggiungere un determinato valore 'svuotiamo' la memoria nel disco).
+    \item abbiamo uno 'stato' che può variare nel tempo portando a bug ('state go to hell' cit).
+\end{itemize}
+
+\paragraph{Generazione e moltiplicazione di matrici}
+Problema: dato un certo input di grandezza N, generare un output di grandezza N x N (esempio contare le coppie di parole (bigram) in un documento). Due possibili soluzioni:
+\begin{itemize}
+    \item \textbf{Pairs:} generare $O(N^2)$ dati in spazio costante O(1).
+    \item \textbf{Stripes:} generare O(N) dati occupando una quantità di spazio lineare O(N).  
+\end{itemize}
+Ci serve un trade-off tra numero di elementi generati (traffico di rete) e spazio per memorizzare i dati intermedi in locale (memoria o disco).\\
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/Pairs.PNG}
+    \caption{Pairs Solution}
+\end{figure}\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/Stripes.PNG}
+    \caption{Stripes Solution}
+\end{figure}
+La soluzione Stripes utilizza gli associative array come visto prima.
+
+\paragraph{Relational Algebra Operators}
+Esempi di operazioni possibili: selezione, proiezione, unione, intersezione, differenza, natural join, raggruppamento e aggregazione.
+\subparagraph{Selezione}
+\begin{itemize}
+    \item \textbf{Map:} per ogni tupla t in R, se una determinata condizione c(t) è soddisfatta, verrà restituita in output come coppia (t, t).
+    \item \textbf{Reduce:} per ogni coppia (t, t) in input, in output avremo la chiave scartando le informazioni ridondanti.  
+\end{itemize}
+\subparagraph{Proiezione}
+\begin{itemize}
+    \item \textbf{Map:} per ogni tupla t in R, creiamo una nuova tupla t' che conterrà solo gli attributi che vogliamo proiettare, in output avremo la coppia (t', t').
+    \item \textbf{Reduce:} per ogni coppia (t', t') in input, in output avremo la chiave scartando le informazioni ridondanti.  
+\end{itemize}
+\subparagraph{Unione}
+\begin{itemize}
+    \item \textbf{Map:} per ogni tupla t in R avremo in output una coppia (t, t).
+    \item \textbf{Reduce:} per ogni chiave in ingresso t ci saranno 1 o 2 valori uguali a t (nell'unione di due tabelle una certa tupla potrebbe avercela una sola tabella o avercela entrambe), se ci sono due valori scartiamo il secondo e salviamo solo il primo.  
+\end{itemize}
+\subparagraph{Intersezione}
+\begin{itemize}
+    \item \textbf{Map:} per ogni tupla t in R avremo in output una coppia (t, t).
+    \item \textbf{Reduce:} per ogni chiave in ingresso t ci saranno 1 o 2 valori uguali a t, se ci saranno 2 valori uguali a t verranno collassati in un singolo output, se il valore è solo 1 verrà scartato.  
+\end{itemize}
+\subparagraph{Differenza}
+\begin{itemize}
+    \item \textbf{Map:} per ogni tupla t in R avremo in output una coppia (t, R) e per ogni tupla t in S avremo in output una coppia (t, S).
+    \item \textbf{Reduce:} per ogni chiave in ingresso t, ci saranno 1 o 2 valori, se c'è un solo valore uguale a (t, R) sarà fornito in output, se invece ci sono due valori o un solo valore uguale a (t, S) verranno scartati.  
+\end{itemize}
+(1:08:45)
+\paragraph{Graph algorithms}
+
+\newpage
 \section{Spark}
+Apache Spark è un framework open source per il calcolo distribuito. A differenza di Hadoop, Spark memorizza i dati intermedi delle iterazioni di MapReduce nella RAM anzichè nell'HDD. Ciò consente un notevole incremento delle prestazioni. Chiaramente, i dati intermedi prodotti non entreranno mai nella memoria di una sola macchina quindi Spark divide questi dati e li distribuisce sulle RAM delle macchine che compongono il cluster. \\
+Spark implementa un modello chiamato \textit{Data Flow} che consiste nel far sì che il programmatore possa gestire l'implementazione dell'algoritmo e non tutte le cose di contorno (fault-tolerance, persistenza dei dati, distribuzione, comunicazioni asincrone ecc). In questo modo il sistema Spark può ottimizzare l'applicazione a runtime. \\
+Nel modello Data Flow i Job vengono espressi come DAG (Direct Acyclic Graphs). MapReduce è un DAG. Ogni nodo produce un output che viene servito come input al nodo/i successivo/i. In questo modo il sistema sceglie autonomamente come dividere ogni operatore ad alto livello in un set di tasks, e su quali nodi eseguire detti tasks. Ciascun task viene eseguito più volte per garantire la ridondanza e la fault-tolerance. \\
+Nello \textbf{Spark Core} abbiamo una serie di funzionalità di base tra cui:
+\begin{itemize}
+    \item scheduling dei task
+    \item gestione della memoria
+    \item fault-recovery
+    \item interazione con il sottostante sistema di memoria (es. HDFS)
+\end{itemize}
+La struttura dati più importante di Spark è l'\textbf{RDD (Resilient Distribuited Dataset)}. E' una collezione immutabile di oggetti distribuito attraverso molteplici nodi del cluster (nelle rispettive RAM). Un RDD è diviso in un certo numero di partizioni, che sono pezzi di informazione \textit{atomiche}. Gli Spark Tasks sono progettati per manipolare in parallelo gli RDD. Quando si programma in Spark si programma il grafo delle computazioni (attraverso le apposite API Java, Python ecc) andando a specificare quali computazioni eseguire ad ogni nodo del DAG, quali sono gli archi che collegano i nodi del grafo, dove si trova l'input e dove vogliamo salvare l'output.\\
+In caso di fallimenti l'RDD può essere ricostruito attraverso il concetto di \textit{Lineage}. Se un determinato nodo fallisce, siamo in grado di recuperare i dati navigando all'indietro nel grafo delle computazioni e ri-eseguendo i calcoli necessari a produrre i dati persi.\\
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/spark.jpg}
+    \caption{Architettura di un'applicazione Spark}
+\end{figure}\noindent
+Un'applicazione spark consiste in un processo \textit{driver} che esegue il main() del programma e in una serie di processi \textit{esecutori}. Il processo driver è il cuore dell'applicazione Spark e viene eseguito sul \textit{namenode} del cluster. Le responsabilità principali del processo driver sono:
+\begin{itemize}
+    \item mantenere informazioni sull'applicazione Spark
+    \item interagire con l'utente
+    \item analizzare, distribuire e schedulare il lavoro attraverso i processi esecutori
+\end{itemize}
+I processi esecutori, invece, si occupano di eseguire il codice che gli viene assegnato dal driver e di riportare lo stato della computazione. \\ 
+Il processo driver è composto da: un \textbf{contesto Spark} e un \textbf{codice utente}. L'oggetto \texttt{SparkContext} rappresenta una connessione con il sistema cluster. Nella shell di \texttt{pyspark}, viene creato automaticamente un \texttt{SparkContext} all'avvio ed è accessibile attraverso la variabile \texttt{sc}. In uno script Python che include un'applicazione Spark, si deve creare questa variabile il prima possibile.
+\begin{lstlisting}
+# import spark
+from pyspark import SparkContext
+
+# initialize a new Spark Context to use for the execution of the script
+sc = SparkContext(appName="MY-APP-NAME", master="local[*]")
+\end{lstlisting}
+L'argomento \texttt{master} può assumere differenti valori:
+\begin{itemize}
+    \item \texttt{local}: esegue in modalità locale con un singolo core.
+    \item \texttt{local[N]}: esegue in modalità locale con N core.
+    \item \texttt{local[*]}: esegue in modalità locale e utilizza i core che la macchina possiede.
+    \item \texttt{yarn}: si connette ad un cluster YARN.
+\end{itemize}
+Spark fornisce un tool per inviare job attraverso i manager dei cluster, chiamato \texttt{spark-submit}. Si può utilizzare il flag \texttt{--master} per specificare la modalità di esecuzione dell'applicazione Spark.
+\paragraph{Creazione di un RDD}
+Utilizzare il metodo di parallelizzazione su un oggetto \texttt{SparkContext sc}. Trasforma una collezione su singolo nodo in una collezione "parallela". Si può anche esplicitamente definire il numero di partizioni.
+\begin{lstlisting}
+numbers = [1,2,3,4,5]
+rdd_numbers = sc.parallelize(numbers)
+print(rdd_numbers)
+
+words = "i love spark".split(" ")
+rdd_words = sc.parallelize(words, 2)
+print(rdd_words)
+\end{lstlisting}
+Gli RDD possono essere creati da storage esterni (hard disk locali, HDFS, Amazon S3, ecc...). I file di testo RDD possono essere creati utilizzando il metodo \texttt{textFile()}.
+\begin{lstlisting}
+rdd_file = sc.textFile("file.txt")
+rdd_hdfs = sc.textFile("hdfs://namenode:9000/path/to/file")
+shakespeare_rdd = sc.textFile("hdfs://172.16.0.1/user/hadoop/shakespeare.txt")
+\end{lstlisting}
+
+\paragraph{Modello di Programmazione in Spark}
+Questo modello si basa sulle operazioni parallelizzabili, ovvero funzioni di alto ordine che eseguono funzioni definite dall'utente in parallelo. Il Data Flow è composto da sorgenti di dati, operatori e data sink connettendo gli input agli output. La descrizione dei job è basata su grafo direzionato aciclico (DAG).
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/modello programmazione spark.png}
+    \caption{Modello di programmazione Spark}
+\end{figure}\noindent
+
+\paragraph{Operazioni RDD}
+Gli RDD supportano 2 tipi di operazioni: \textbf{Trasformazioni} che consentono di costruire il piano logico e \textbf{Azioni} che consentono di eseguire i calcoli.
+\begin{itemize}
+    \item \textbf{Trasformazioni}: creano un nuovo RDD a partire da RDD esistenti. \\
+    Non calcolano subito i loro risultati. Ricorda le trasformazioni applicate al dataset di base. Sono calcolate solo quando un'azione richiede un risultato che deve essere ritornato al programma driver
+    \item \textbf{Azioni}: attivano i calcoli. \\
+    Istruiscono Spark per calcolare un risultato da una serie di trasformazioni. Ci sono 3 tipi di azioni:
+    \begin{itemize}
+        \item Azioni per vedere i dati nella console.
+        \item Azioni per collezionare dati su oggetti nativi nei rispettivi linguaggi.
+        \item Azioni per scrivere su output.
+    \end{itemize}
+\end{itemize}
+
+\subparagraph{Azioni RDD}
+\begin{itemize}
+    \item \texttt{collect}: ritorna al driver tutti gli elementi dell'RDD come un array 
+    \item \texttt{first}: ritorna il primo valore nell'RDD.
+    \item \texttt{take}: ritorna un array con i primi n elementi dell'RDD. \\ Variazioni di questa funzione: \texttt{takeOrdered} e \texttt{takeSample}.
+    \item \texttt{count}: ritorna il numero di elementi nel dataset.
+    \item \texttt{max} e \texttt{min}: ritornano i valori massimi e minimi rispettivamente.
+    \item \texttt{reduce}: aggrega gli elementi del dataset utilizzando una data funzione. Questa data funzione dovrebbe essere commutativa e associativa, cosicché possa essere calcolata correttamente in parallelo.
+    \item \texttt{saveAsTextFile}: scrive gli elementi di un RDD come un file di testo. Filesystem locale, HDFS o qualsiasi altro file system supportato da Hadoop.
+\end{itemize}
+
+\subparagraph{Trasformazioni RDD generiche}
+\begin{itemize}
+    \item \texttt{distinct}: rimuove duplicati dall'RDD.
+    \item \texttt{filter}: ritorna i record RDD che fanno match con alcune funzioni "predicato".
+    \item \texttt{sample}: prende un sample random dei dati, con o senza rimpiazzamento.
+    \item \texttt{map} e \texttt{flatMap} applicano una data funzione a ogni elemento RDD in maniera indipendente. \\
+    \texttt{map} trasforma un RDD di lunghezza \textit{n} in un altro RDD di lunghezza \textit{n}. \\
+    \texttt{flatMap} consente di ritornare 0, 1 o più elementi da una funzione map.
+    \item \texttt{sortBy}: ordina un RDD.
+    \item \texttt{union}: esegue un merge di RDD.
+    \item \texttt{intersection}: esegue un'intersezione di RDD
+\end{itemize}
+
+\subparagraph{Trasformazioni RDD Key-Value}
+In una coppia \texttt{(k,v)}, \texttt{k} è la chiave e \texttt{v} è il valore. \\
+Per creare un RDD key-value: \texttt{map} sul RDD attuale ad una struttura key-value standard. \texttt{keyBy} per creare una chiave da un valore attuale. \texttt{zip} per zippare insieme due RDD.
+\begin{itemize}
+    \item \texttt{keys} e \texttt{values} per estrarre rispettivamente chiavi e valori dall'RDD.
+    \item \texttt{lookup} effettua il lookup di una lista di valori per una certa chiave in un RDD.
+    \item \texttt{reduceByKey} combina valori con la stessa chiave. Prende una funzione come input e la usa per combinare valori con la stessa chiave.
+    \item \texttt{sortByKey} ritorna un RDD ordinato dalla chiave.
+    \item \texttt{join} effettua un inner-join sulla chiave. Ci sono anche altri tipi di join: \texttt{fullOuterJoin, leftOuterJoin, rightOuterJoin, cartesian}.
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/rdd funzioni alto ordine.png}
+    \caption{Riassunto funzioni ad alto ordine RDD}
+\end{figure}\noindent
+
+\paragraph{Persistenza RDD}
+Di default, ogni RDD trasformato potrebbe essere ricalcolato ogni volta che un'azione è eseguita su di esso. \\
+Spark supporta inoltre la \textit{persistenza} (o \textit{caching}) degli RDD in memoria, per il riutilizzo rapito di operazioni. Quando un RDD è persistente, ogni nodo memorizza tutte le partizioni che calcola in memoria e le riutilizza per altre azioni su quel dataset (o dataset che derivano da quello). Questo consente alle azioni future di essere molto più veloci (anche 100x). Per rendere un RDD persistente, si utilizzano i metodi \texttt{persist()} o \texttt{cache()} su di esso. La cache di Spark è fault-tolerant: una partizione RDD persa è automaticamente ricalcolata utilizzando le trasformazioni che originariamente sono state create. \\
+Utilizzando \texttt{persist()}, si può specificare il livello di storage per la persistenza di un RDD. I livelli di storage sono: \texttt{MEMORY\_ONLY, MEMORY\_AND\_DISK, DISK\_ONLY, ...}. Chiamare \texttt{cache()} è la solita cosa di \texttt{persist()} con il livello di storage di default (\texttt{MEMORY\_ONLY}). \\
+Per analizzare quale livello di storage sia il migliore, si devono fare delle considerazioni:
+\begin{itemize}
+    \item Cercare di mantenere in memoria il più possibile
+    \item La serializzazione rende gli oggetti molto più efficienti dal punto di vista dello spazio, a patto di selezionare una libreria di serializzazione veloce.
+    \item Cercare di non riversare sul disco a meno che le funzioni che calcolano il dataset siano costose (ad esempio filtrare un grande ammontare di dati).
+    \item Utilizzare livelli di storage replicati se si vuole un recupero veloce dai fallimenti.
+\end{itemize}
+
+\paragraph{Variabili Distribuite Condivise}
+In più all'interfaccia \textit{Resilient Distributed Dataset (RDD)}, in Spark ci sono due tipo di variabili distribuite condivise:
+\begin{itemize}
+    \item \textbf{variabili broadcast:} consentono di salvare un valore su tutti i nodi worker e di riutilizzarli tra molte azioni di Spark senza doverle re-inviare al cluster.
+    \item \textbf{accumulatori:} consentono di aggiungere dati insieme da tutti i task in un risultato condiviso.
+\end{itemize}
+Queste sono variabili che possono essere usate in funzioni definite dall'utente (ad esempio, in una funzione map su un RDD)  che hanno proprietà speciali quando vengono eseguiti su un cluster.
+
+\subparagraph{Variabili Broadcast}
+Manda in maniera efficiente valori grandi e di sola lettura a tutti i workers. Questi valori vengono salvati dai workers per poter essere utilizzati in una o più operazioni di Spark. È come mandare una lookup table grande e di sola lettura a tutti i workers. Quindi si tengono queste variabili di sola lettura nella cache dei workers, invece di mandare i valori ogni volta per ogni task.
+\begin{lstlisting}
+# nel driver
+broadcastVar = sc.broadcast([1, 2, 3])
+
+#sui workers
+print(broadcastVar.value)
+\end{lstlisting}
+
+\subparagraph{Accumulatori}
+Aggiornare un valore all'interno di una varietà di trasformazioni e propagare quel valore nei nodi driver in una maniera efficiente e tollerante ai fallimenti. \\ 
+Gli accumulatori sono variabili che sono "aggiunte" soltanto attraverso operazioni associative e commutative e che quindi possono essere efficientemente supportate in parallelo. \\ 
+Vengono aggiornati soltato una volta che l'RDD viene calcolato. I task sul worker vedono gli accumulatori come variabili di sola scrittura.
+\begin{lstlisting}
+# sul driver
+accumulator = spark.sparkContext.accumulator(0)
+
+# sul worker
+accumulator.add(3)
+
+# sul driver
+print(accumulator.value)
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/spark anatomia job.png}
+    \caption{Anatomia di un Job in Spark}
+\end{figure}\noindent
+
+\paragraph{Anatomia di Spark}
+\begin{itemize}
+    \item \textbf{Applicazione Spark:} Un'applicazione Spark non fa nulla finché il programma driver non chiama un'azione (lazy evaluation).
+    \item \textbf{Job Spark:} Un Job Spark è l'elemento più alto nella gerarchia di esecuzione di Spark. Ogni Job Spark corrisponde ad un'azione; ogni azione è chiamata dal programma driver di un'applicazione Spark.
+    \item \textbf{Stage Spark:} Ogni job si divide in una serie di Stage. Gli stage in Spark rappresentano un gruppo di task che possono essere eseguiti insieme; le trasformazioni larghe definiscono la divisione dei jobs in stage.
+    \item \textbf{Task Spark:} Uno stage consiste in task, che sono la più piccola unità di esecuzione. Ogni task rappresenta una computazione locale; tutti i task in uno stage eseguono lo stesso codice in un differente pezzo di dato.
+\end{itemize}
+
+\paragraph{Trasformazioni piccole e larghe}
+Le trasformazioni si dividono in 2 categorie: trasformazioni con piccole dipendenze e trasformazioni con larghe dipendenze.
+\begin{itemize}
+    \item \textbf{Trasformazioni piccole:} Le dipendenze possono essere determinate a tempo di progettazione, indipendentemente dai valori dei records nella partizione genitori, e dal fatto che ogni genitore abbia al massimo una partizione figlia. \\
+    Possono essere eseguite su un subset dei dati senza alcuna informazione riguardo le altre partizioni.
+    \item \textbf{Trasformazioni larghe (shuffle):} Non possono essere eseguite su righe arbitrarie e richiedono che i dati siano partizionati in una maniera particolare, ad esempio in accordo ai valori della loro chiave.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/spark trasformazioni.png}
+    \caption{Trasformazioni Spark}
+\end{figure}\noindent
+
+\subsection{Programmare un'applicazione Spark}
+\begin{enumerate}
+    \item Creare alcuni input RDD da dati esterni o parallelizzare una collezione nel programma driver
+    \item Trasforma gli input in maniera \textit{lazy} (pigra) per definire nuovi RDD utilizzando trasformazioni come \texttt{filter()} e \texttt{map()}.
+    \item Si richiede a Spark di mettere in \texttt{cache()} ogni RDD intermedio che dovrà essere riutilizzato.
+    \item Lancia azioni come ad esempio \texttt{count()} e \texttt{collect()} per dare il via al calcolo parallelo, che è ottimizzato ed eseguito da Spark.
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/Spark costi di comunicazione.png}
+    \caption{Costi di comunicazione}
+\end{figure}\noindent
+
+\paragraph{Shuffling}
+Lo shuffling richiede di risolvere un problema di ordinamento, definito come segue: 
+\begin{itemize}
+    \item C'è un certo ordine dei dati che deve essere eseguito.
+    \item I dati iniziano ad essere distribuiti su \textit{p} macchine.
+    \item La comunicazione all-to-all è inevitabile.
+    \item Il meglio che si può sperare è che i dati siano mandati sulla rete soltanto una volta.
+    \item I dati ordinati sono salvati in maniera distribuita.
+\end{itemize}
+
+\paragraph{Ordinamento Distribuito}
+Ogni macchina manda un sample uniforme dei suoi dati al driver di ordinamento. Il driver utilizza i sample da ogni macchina, pesandoli con il numero di dati per calcolare una distribuzione approssimata dei dati da ordinare. La distribuzione è utilizzata per calcolare \textit{p} punti di split dove il numero dei dati tra due punti consecutivi è approssimativamente lo stesso. I punti di split sono mandati in broadcast ai nodi. Ogni macchina fa un ordinamento locale dei dati; utilizzando i punti di split, ogni macchina costruisce un indice in cui si indica ogni dato in quale macchina deve andare. La macchina \textit{i} chiede alla macchina \textit{j} la sua porzione di dati: la comunicazione all-to-all è necessaria in questo step. Ogni macchina effettua un merge \textit{p-way} di p differenti dati ordinati che ha ricevuto da ogni altra macchina.
+
+\paragraph{Campionamento Uniforme}
+Uno stream $\sigma$ è una sequenza di elementi (s\textsubscript{1}, ... , s\textsubscript{m}) dove ogni s\textsubscript{i} $\in \{1, ... , n\}$. Tipicamente, la lunghezza dello stream è sconosciuta e \textit{n} è grande, ma $n << m$. \\
+Dato uno stream $\sigma$, per ogni i $\in \{1, ... , n\}$, si definisce f\textsubscript{i} = $\{ j : s\textsubscript{j} = i \}$, il numero di occorrenze del valore i nello stream. Possiamo definire la distribuzione di probabilità \textit{P} su $\{1, ... , n\}$ da $p\textsubscript{i} =  \frac{f\textsubscript{i}}{m}$. L'obiettivo è di fare output di un singolo elemento campionato in accordo alla distribuzione P. \\
+\subparagraph{Algoritmo di campionamento Naive}
+\begin{itemize}
+    \item \textit{Inizializzazione:} per ogni valore $i = 1, ..., n$ si inizializza un contatore $f\textsubscript{i} \leftarrow 0 $. Si inizializza $m \leftarrow 0$.
+    \item \textit{Streaming:} per ogni s\textsubscript{j}, se $s\textsubscript{j} = i$, si setta $f\textsubscript{i} \leftarrow f\textsubscript{i} + 1$. Si incrementa $m \leftarrow m + 1$.
+    \item \textit{Output:} calcolare $p\textsubscript{i} =  \frac{f\textsubscript{i}}{m}$. Scegliere una \textit{i} in accordo a P = (p\textsubscript{1}, ..., p\textsubscript{n}).
+\end{itemize}
+Salvare lo stream intero prenderebbe O(m logn) di spazio. In questo caso, si salvano n contatori il cui range sarà in 0 ed m e richiederà O(n logm) di spazio in totale. Dato che $n << m$, questo è meglio ma non è sicuramente la cosa migliore che si può fare. 
+\subparagraph{Algoritmo di campionamento uniforme}
+\begin{itemize}
+    \item \textit{Inizializzazione:} settare $x \leftarrow null$, $k \leftarrow 0$.
+    \item \textit{Streaming:} per ogni s\textsubscript{j}, si incrementa $k \leftarrow k + 1$. Con probabilità $\frac{1}{k}$, si setta $x \leftarrow s\textsubscript{j}$. Altrimenti, non si fa nulla.
+    \item \textit{Output:} ritornare x.
+\end{itemize}
+In questo caso si salva un contatore per x e un contatore per j, quindi $O(log n + log m )$ di spazio in totale.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{img/sorting .png}
+    \caption{Sorting (shuffle)}
+\end{figure}\noindent
 
 \end{appendices}
 \end{document}
