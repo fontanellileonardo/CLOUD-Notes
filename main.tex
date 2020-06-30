@@ -288,15 +288,15 @@ La figura sottostante rappresenta il concetto base di virtualizzazione in una fo
 In parole povere, la virtualizzazione è la separazione logica delle risorse fisiche che fa sì che gli utenti non possano accederci direttamente per soddisfare le loro esigenze anche se, alla fine, le risorse fisiche sono coloro che forniranno i servizi richiesti. Quindi la virtualizzazione è colei che andrà a fornire un livello di astrazione logica. \\
 L'astrazione è il processo che nasconde le caratteristiche complesse e non essenziali di un sistema. Attraverso l'astrazione, un sistema può essere presentato in modo semplificato per un uso particolare nascondendo agli utenti dettagli indesiderati. Nell'informatica, l'astrazione viene implementata attraverso gli strati del software. Lo strato del sistema operativo può essere trattato come uno strato di astrazione. \\
 Nel cloud computing la virtualizzazione delle risorse (che aggiunge uno strato software alle risorse di elaborazione fisica per creare risorse virtuali) funge da strato di astrazione. La sua astrazione rende più facile offrire un servizio più flessibile, affidabile e potente. \\
-Ogni tipo di risorsa IT può essere virtualizzata: dai dispositivi base (processore, RAM, ecc) ad altre risorse come la memoria, dispositivi network o prefirefiche (tastiere, mouse, stampanti, ecc). Tuttavia, va notato che nel caso delle risorse di elaborazione di base un componente virtualizzato può essere operativo solo quando una risorsa fisica lo abilita dal back-end. Ad esempio, un processore virtuale può funzionare solo quando è collegato un processore fisico. \\
+Ogni tipo di risorsa IT può essere virtualizzata: dai dispositivi base (processore, RAM, ecc) ad altre risorse come la memoria, dispositivi network o periferiche (tastiere, mouse, stampanti, ecc). Tuttavia, va notato che nel caso delle risorse di elaborazione di base un componente virtualizzato può essere operativo solo quando una risorsa fisica lo abilita dal back-end. Ad esempio, un processore virtuale può funzionare solo quando è collegato un processore fisico. \\
 La cosa importante da notare è che i dispositivi simulati prodotti attraverso la virtualizzazione possono o meno assomigliare ai componenti fisici reali (in termini di qualità, architettura o quantità). Ad esempio, nella figura sotto riportata, gli utenti hanno accesso a tre processori mentre in realtà esiste un processore fisico. Oppure, il processore a 32 bit può essere prodotto (in forma virtuale) dal processore fisico effettivo a 64 bit.
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{img/resource virtualization.png}
     \caption{Virtualizzazione delle risorse}
 \end{figure}\noindent
-La virtualizzazione migliora radicalmente la flessibilità e la disponibilità delle risorse informatiche e le organizzazioni possono guadagnare in termini di business. Esistono diversi tipi di tecnologie di virtualizzazione come il Server virtualization, Storage virtualization, NetworkvVirtualization ecc. Tra questi, il fattore principale che guida il passaggio alla virtualizzazione è il Server virtualization, che è la parte più importante della tecnologia di virtualizzazione delle risorse di elaborazione. \\
-Il \textbf{Machine/Server virtualization} è il concetto di creare una macchina virtuale (o un server virtuale) nella attuale macchina fisica. La macchina fisica è chiamata host system e la macchina virtuale \textbf{guest system}. Nel sistema informatico convenzionale, c'è sempre stata una relazione uno a uno tra computer fisico e sistema operativo. Uno alla volta, un singolo sistema operativo può essere eseguito su di esso. \\
+La virtualizzazione migliora radicalmente la flessibilità e la disponibilità delle risorse informatiche e le organizzazioni possono guadagnare in termini di business. Esistono diversi tipi di tecnologie di virtualizzazione come il Server virtualization, Storage virtualization, Network Virtualization ecc. Tra questi, il fattore principale che guida il passaggio alla virtualizzazione è il Server virtualization, che è la parte più importante della tecnologia di virtualizzazione delle risorse di elaborazione. \\
+Il \textbf{Machine/Server virtualization} è il concetto di creare una macchina virtuale (o un server virtuale) nella attuale macchina fisica. La macchina fisica è chiamata \textbf{host system} e la macchina virtuale \textbf{guest system}. Nel sistema informatico convenzionale, c'è sempre stata una relazione uno a uno tra computer fisico e sistema operativo. Uno alla volta, un singolo sistema operativo può essere eseguito su di esso. \\
 La virtualizzazione dell'hardware elimina la limitazione di avere una relazione uno a uno tra hardware fisico e sistema operativo. Facilita il funzionamento di più sistemi informatici con i propri sistemi operativi su una singola macchina fisica. Come mostrato nella figura sottostante, il sistema operativo dei sistemi guest in esecuzione sulla stessa macchina fisica non deve essere simile. Tutte queste macchine virtuali in esecuzione su un singolo sistema host, rimangono indipendenti l'una dall'altra. I sistemi operativi sono installati in quelle macchine virtuali. I guest systems possono accedere all'hardware del host system e possono eseguire le applicazioni all'interno del proprio ambiente operativo. 
 \begin{figure}[H]
     \centering
@@ -331,7 +331,7 @@ Le VM vengono create sopra ai livelli di virtualizzazione. Questo livello di vir
     \item Fornisce alle VM l'accesso alle risorse di sistema.
     \item Controlla e monitora l'esecuzione delle VM su di esse. 
 \end{itemize}
-Questo livello software è chiamato \textit{Hypervisor} o \textbf{Virtual Machine Monitor} (VMM). Il VMM crea una astrazione del livello software e/o harware sottostsnte e rappreseta le risorse del sistema virtuale per i suoi utenti. Questo livello facilita anche l’esistenza di più macchine virtuali che non sono obbligate a condividere lo stesso kernel del sistema operativo (sottostante). Per questo motivo diventa possibile eseguire diversi sistemi operativi sulle macchine virtuali che sono state create sopra ad un VMM. Il VMM fornisce una console di sistema amministrativa attraverso la quale è possibile gestire l’ambiente del sistema virtuale (come il numero di componenti virtuali o la capacità dei vari componenti). \\
+Questo livello software è chiamato \textit{Hypervisor} o \textbf{Virtual Machine Monitor} (VMM). Il VMM crea una astrazione del livello software e/o hardware sottostante e rappresenta le risorse del sistema virtuale per i suoi utenti. Questo livello facilita anche l’esistenza di più macchine virtuali che non sono obbligate a condividere lo stesso kernel del sistema operativo (sottostante). Per questo motivo diventa possibile eseguire diversi sistemi operativi sulle macchine virtuali che sono state create sopra ad un VMM. Il VMM fornisce una console di sistema amministrativa attraverso la quale è possibile gestire l’ambiente del sistema virtuale (come il numero di componenti virtuali o la capacità dei vari componenti). \\
 Le tecniche di virtualizzazione che si basano sul VMM possono essere suddivise in tre categorie: \textit{Full virtualization}, \textit{Para-virtualization} e \textit{Hardware-assisted virtualization}. \\
 Esistono due diverse tecniche di \textit{Server/Machine virtualization}, l’\textit{hosted approach} e il \textit{bare metal approach} che variano a seconda del tipo di hypervisor utilizzato. Sebbene le tecniche siano diverse hanno lo stesso obiettivo finale, creare una piattaforma in cui più macchine virtuali possono condividere le stesse risorse di sistema. Ogni tecnica è semplicemente un modo diverso di raggiungere questo obiettivo.
 
@@ -347,7 +347,7 @@ In questo approccio, un sistema operativo viene prima installato sulla macchina 
 
 \subsubsection{Bare Metal Approach Rimozione dell'Host OS}
 In questo approccio l'hypervisor viene installato direttamente sulla macchina fisica. Poiché l'hypervisor è il primo livello rispetto alle risorse hardware la tecnica viene definita approccio \textit{bare metal}. Qui, il VMM o hypervisor comunicano direttamente con l'hardware del sistema. \\
-In questo approccio, l'hypervisor funge da monitor per le macchine virtuali di basso livello e viene anche chiamato \textit{\textbf{hypervisor di tipo 1 o native hypervisor}}. I server ESX ed ESXi di VMware, Hyper-V di Microsot e la soluzione Xen sono alcuni degli esempi di bare metal hypervisors. \\ 
+In questo approccio, l'hypervisor funge da monitor per le macchine virtuali di basso livello e viene anche chiamato \textit{\textbf{hypervisor di tipo 1 o native hypervisor}}. I server ESX ed ESXi di VMware, Hyper-V di Microsoft e la soluzione Xen sono alcuni degli esempi di bare metal hypervisors. \\ 
 \uline{Vantaggi:} poiché il bare metal hypervisor può accedere direttamente alle risorse hardware, nella maggior parte dei casi offre prestazioni migliori rispetto all'hosted hypervisor. Per applicazioni più grandi come i data center aziendali, la virtualizzazione bare metal è più adatta perché di solito fornisce funzionalità avanzate per la gestione delle risorse e della sicurezza. Gli amministratori ottengono un maggiore controllo sull'ambiente host. \\
 \uline{Svantaggi:} come ogni hypervisor di solito ha un set limitato di device drivers integrati, quindi i bare metal hypervisor hanno un supporto hardware limitato e non possono essere eseguiti su un'ampia varietà di piattaforme hardware.
 \begin{figure}[H]
@@ -976,6 +976,7 @@ Negli ultimi anni, tra i vari modelli di sviluppo per le applicazioni cloud, è 
 L’architettura orientata ai servizi viene incontro a quelli che sono i principali obiettivi del cloud computing, quali l’ottenimento di un sistema più flessibile, di facile mantenimento e a costi ridotti, in un ambiente estremamente dinamico.\\ \\In questo tipo di modello, ogni componente software è considerato come un \textbf{servizio} a sé stante che implementa funzionalità specifiche.
 Le applicazioni in SOA sono realizzate come \textit{collezioni di servizi}, attraverso componenti software esistenti, in maniera modulare.
 I servizi software possono essere sviluppati usando diversi linguaggi di programmazione ed essere eseguiti su diverse piattaforme, in maniera distribuita. Un’applicazione può sfruttare uno o più di tali servizi e SOA permette di integrare i diversi componenti attraverso un approccio indipendente da linguaggio e piattaforma utilizzati.
+I \textit{servizi Web} sono un esempio del più comune utilizzo di implementazioni SOA.
 \subsubsection{Architettura}
 I servizi all’interno di un’applicazione comunicano via \textbf{\textit{message passing}}. 
 Ogni messaggio ha uno schema specifico per definire il formato dell’informazione che deve fornire un servizio e come deve avvenirne lo scambio.
@@ -1007,9 +1008,24 @@ L'indirizzo e il descrittore del broker sono noti perciò un consumatore può fi
 
 \paragraph{Vantaggi}
 L'implementazione dei servizi rimane nascosta, dando così la possibilità di risolvere eventuali problemi di implementazione del singolo senza interessare gli altri, almeno fin quando la sua dichiarazione/interfaccia rimane intatta. \\ 
-Questa separazione abilita una funzione di "accoppiamento allentato" (\textit{loose coupling}) che consente di collegare e scollegare i servizi specifici da un'applicazione senza sforzo
+I vantaggi che ne derivano sono:
+\begin{itemize}
+    \item \textit{\textbf{loose coupling} ("Accoppiamento allentato"}: consente di collegare e scollegare i servizi specifici da un'applicazione senza sforzo. Questa caratteristica rende il sistema flessibile nei cambiamenti ed espandibile, nuove funzionalità possono essere aggiunte in breve tempo.
+    \item \textit{\textbf{Componibilità}}: un sistema può essere ottenuto dall'unione di più servizi già esistenti.
+    \item \textit{\textbf{Comunicazione senza stato}}: la comunicazione è basata sullo scambio di messaggi, un modolo tratta ogni transazione separatamente, in maniera indipendente dalle altre.
+    \item \textit{\textbf{Scalabilità}}: le caratteristiche precedenti rendono i servizi SOA particolarmente adatti alla scalabilità dell'infrastruttura del cloud. Il broker gioca un ruolo fondamentale nella gestione dinamica dei servizi che vengono continuamente creati/distrutti per assecondare le richieste dei consumatori. Quando una nuova istanza di un servizio viene creata essa viene registrata dal broker e resa disponibile al consumatore per poi essere deregistrata quando viene distrutta, tutto in maniera trasparente al consumatore.
+\end{itemize}
 
+\subsection{Servizi Web}
+I servizi web sono la naturale evoluzione e adozione del paradigma SOA nel Web. Essi hanno un'interfaccia descritta in un formato eseguibile da una macchina, il \textbf{Web Services Description Language (WSDL)}, usato per interagire con il \textit{broker}. Tramite WSDL ogni \textit{service provider} si registra al \textit{service broker} mentre il \textit{service consumer} utilizza WSDL per cercare uno specifico servizio.
+Consumer e provider interagiscono tra loro usando il \textbf{Simple Object Access Protocol (SOAP)}.
+\begin{figure}[H]
+\centering
+\includegraphics{img/wsdl.png}
+\caption{Interazioni nei Servizi Web}
+\end{figure}
 
+\subsection{SOAP}
 
 \subsection{Sistemi Distribuiti Message-oriented}
 Le applicazioni cloud sono sviluppate come sistemi distribuiti la cui implementazione è la composizione di diverse funzionalità su differenti VMs. Queste VMs sono raggruppate in strati (tier), dentro ognuno di questi strati, per garantire alta disponibilità e scalabilità, le VMs replicano le loro funzionalità; le richieste dei client vengono ricevute dalle VMs nel primo strato (frontend tier) e successivamente inviate agli altri strati (backend tier). 
@@ -2480,12 +2496,13 @@ Problema: dato un certo input di grandezza N, generare un output di grandezza N 
     \item \textbf{Pairs:} generare $O(N^2)$ dati in spazio costante O(1).
     \item \textbf{Stripes:} generare O(N) dati occupando una quantità di spazio lineare O(N).  
 \end{itemize}
-Ci serve un trade-off tra numero di elementi generati (traffico di rete) e spazio per memorizzare i dati intermedi in locale (memoria o disco).\\
+Ci serve un trade-off tra numero di elementi generati (traffico di rete) e spazio per memorizzare i dati intermedi in locale (memoria o disco).
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{img/Pairs.PNG}
     \caption{Pairs Solution}
-\end{figure}\begin{figure}[H]
+\end{figure}
+\begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{img/Stripes.PNG}
     \caption{Stripes Solution}
@@ -2519,8 +2536,95 @@ Esempi di operazioni possibili: selezione, proiezione, unione, intersezione, dif
     \item \textbf{Map:} per ogni tupla t in R avremo in output una coppia (t, R) e per ogni tupla t in S avremo in output una coppia (t, S).
     \item \textbf{Reduce:} per ogni chiave in ingresso t, ci saranno 1 o 2 valori, se c'è un solo valore uguale a (t, R) sarà fornito in output, se invece ci sono due valori o un solo valore uguale a (t, S) verranno scartati.  
 \end{itemize}
-(1:08:45)
+\subparagraph{Natural Join}
+Assumiamo di avere due relazioni R(a,b) e S(b,c), vogliamo trovare le tuple che fanno match sui valori dell'attributo b e restituirle in output.
+\begin{itemize}
+    \item \textbf{Map:} per ogni tupla (a,b) in R restituiremo in output (b,(R,a)) mentre per ogni tupla (b,c) restituiremo (b,(S,c)).
+    \item \textbf{Reduce:} per ogni chiave b in input, avremo una lista di valori nella forma (R,a) o (S,c). Utilizzando un approccio Stripes costruiremo tutte le coppie e le restituiremo in output con la chiave b.  
+\end{itemize}
+\subparagraph{Raggruppamento e aggregazione}
+Assumiamo di avere la relazione R(a,b,c) e vogliamo raggruppare per 'a' e aggregare per 'b' trascurando 'c'.
+\begin{itemize}
+    \item \textbf{Map:} per ogni tupla (a,b,c) restituiremo in output (a,b) in cui ogni chiave 'a' rappresenta un gruppo.
+    \item \textbf{Reduce:} viene eseguita l'aggregazione alla lista di valori 'b' associati alla chiave 'a' producendo 'x', in output avremo la coppia (a,x).  
+\end{itemize}
+
+\paragraph{Stage Chaining}
+Quando i calcoli diventano molto complessi è utile usare molteplici stage mapreduce in cui l'output dello stage precedente è l'input del successivo. Questi output invece di salvarli sul disco può essere utile salvarli, per esempio, in una cache distribuita per favorire gli stage successivi.
+\subparagraph{Matrix Vector Multiplication}
+Supponiamo di voler moltiplicare una matrice m x n e un vettore n x 1.\\
+Come possiamo comportarci se: 
+\begin{itemize}
+    \item la matrice non entra nella memoria ma il vettore sì.
+    \item né la matrice né il vettore entrano nella memoria.
+\end{itemize}
+Nel primo caso memorizziamo la matrice nel HDFS come una lista di entrate composte da tuple (indice riga 'i', indice colonna 'j', valore della posizione corrispondente '$m_{ij}$'), se la matrice è composta da molti '0' quelle caselle possiamo ometterle; il vettore invece verrà salvato nella memoria di ogni mapper.
+\begin{itemize}
+    \item \textbf{Map:} per ogni coppia ((i,j),$m_{ij}$) in input, generiamo una coppia (i,$m_{ij}v_j$), con $v_j$ valore corrispondente del vettore.
+    \item \textbf{Reduce:} in ingresso avremo le coppie (i,$[m_{i1}v_1,...,m_{in}v_n]$) e in uscita le coppie (i,$m_{i1}v_1+...+m_{in}v_n$).  
+\end{itemize}
+Nel secondo caso invece anche il vettore sarà memorizzato nel HDFS.\\
+La matrice e il vettore verranno divisi per entrare nella memoria, la matrice verrà suddivisa in strisce verticali mentre il vettore in strisce orizzontali che saranno tutte indipendenti tra loro. Successivamente verrà usato l'algoritmo precedente per ogni coppia di strisce.
+\subparagraph{Matrix Matrix Multiplication}
+Le due matrici possono essere viste come relazione di tre attributi come visto prima M(i,j,$m_{ij}$) e N(j,k,$n_{jk}$). Il prodotto tra M e N può essere visto come un natural join sull'attributo j; quindi verranno eseguiti i seguenti passaggi:
+\begin{itemize}
+    \item si inizia dalle due relazioni M(i,j,v) e N(j,k,w).
+    \item calcoliamo (i,j,k,v,w).
+    \item calcoliamo (i,j,k,v$\times$w).
+    \item calcoliamo (i,k,$\sum_j$v$\times$w).  
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/matrixmultiplication1.PNG}
+    \caption{MapReduce stages matrix multiplication}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/matrixmultiplication2.PNG}
+    \caption{Pseudocode matrix multiplication}
+\end{figure}
+
 \paragraph{Graph algorithms}
+Sebbene sia conveniente usare un approccio distribuito sui graph algorithm (GA), questi hanno però il problema che non sono buoni per l'approccio mapreduce che non è pensato in termini di grafici.\\
+I GA solitamente implicano:
+\begin{itemize}
+    \item calcoli ad ogni nodo.
+    \item propagazione dei calcoli per attraversa il grafico.
+\end{itemize}
+Le due domande principali che dobbiamo porci sono:
+\begin{itemize}
+    \item Come rappresentiamo i grafici in mapreduce?
+    \item Come attraversiamo il grafico in mapreduce?
+\end{itemize}
+Per quanto riguarda la prima domanda, i grafici generalmente possono essere rappresentati da due strutture dati:
+\begin{itemize}
+    \item \textbf{Matrice di adiacenza:} ovvero una matrice quadrata (n x n) con n numero di vertici e la casella $m_{ij}$ sarà a 1 se esiste un link diretto tra i due nodi o a 0 altrimenti. Questa soluzione è buona da un punto di vista matematico ma molto meno buona da un punto di vista 'computeristico' visto che la matrice sarà composta da molti zero e quindi avremo molto spazio sprecato.
+    \item \textbf{Lista di adiacenza:} prendiamo la matrice fatta come detto prima e eliminiamo tutte le caselle a 0, quindi rappresentiamo solo gli elementi diversi da 0 con un conseguente risparmio in termini di memoria. Molto facile eseguire i calcoli sugli outlink, molto più complesso per gli inlinks.
+\end{itemize}
+Come facciamo invece ad attraversare il grafico? Per capirlo vediamo un esempio per lo shortest path ottenuto con l'algoritmo di dijkstra.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/ShortestPath.PNG}
+    \caption{Esempio shortest path}
+\end{figure}
+Andiamo per livelli, partendo da $n_0$ considerando ogni volta i nodi adiacenti al livello precedente che avremo nella lista di adiacenza. Al primo passaggio nella lista di adiacenza di $n_0$ avremo $n_1,n_2,n_3$; al secondo passaggio faremo l'unione delle liste di adiacenza dei nodi bianchi $n_1,n_2,n_3$ e otterremo i nodi blu $n_4,n_5,n_6,n_7$; nel terzo ed ultimo passaggio faremo l'unione delle liste di adiacenza dei nodi blu $n_4,n_5,n_6,n_7$ ottenendo i nodi neri $n_8,n_9$.\\
+Quindi andremo a costruire un set di fasi, ogni fase è uno dei livelli visti prima; in ognuna di queste fasi dovremo eseguire i calcoli nei mapper e effettuare l'aggregazione nei reducer. I dati sono quindi rappresentati come coppia chiave valore dove la chiave è il nodo e il valore è la lista di adiacenza per quel nodo. Più nel dettaglio, nel:
+\begin{itemize}
+    \item \textbf{Mapper:} dovremo:
+        \begin{itemize}
+        \item selezionare il path con distanza minima per ogni nodo raggiungibile.
+        \item e per ogni nodo raggiungibile emettere la coppia (m,d+1) dove m è il nodo e d è la distanza.
+        \end{itemize}
+    \item \textbf{Sort/Shuffle:} dovremo raggruppare le distanze per ogni nodo raggiungibile.
+    \item \textbf{Reducer:} per ogni nodo m,dovremo selezionare il path con distanza minima per ogni altro nodo raggiungibile.
+\end{itemize}
+Dobbiamo assicurarci che la lista di adiacenza in uscita dal reducer sia disponibile per i livelli successivi. Quindi ad ogni nuova iterazioni avremo più nodi raggiungibili. \\
+In pseudocodice sarà come segue.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{img/GraphPseudocode.PNG}
+    \caption{Pseudocodice per graph algorithm}
+\end{figure}
 
 \newpage
 \section{Spark}
