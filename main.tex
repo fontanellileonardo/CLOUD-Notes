@@ -14,6 +14,7 @@
 \usepackage{url}
 \usetikzlibrary{shapes,arrows}
 \usepackage[title]{appendix}
+\usepackage{hyperref}
 
 \title{Appunti di Cloud Computing}
 \author{\textit{Very Strategic Authors}}
@@ -1016,7 +1017,7 @@ I vantaggi che ne derivano sono:
     \item \textit{\textbf{Scalabilità}}: le caratteristiche precedenti rendono i servizi SOA particolarmente adatti alla scalabilità dell'infrastruttura del cloud. Il broker gioca un ruolo fondamentale nella gestione dinamica dei servizi che vengono continuamente creati/distrutti per assecondare le richieste dei consumatori. Quando una nuova istanza di un servizio viene creata essa viene registrata dal broker e resa disponibile al consumatore per poi essere deregistrata quando viene distrutta, tutto in maniera trasparente al consumatore.
 \end{itemize}
 
-\subsection{Servizi Web}
+\subsubsection{Servizi Web}
 I servizi web sono la naturale evoluzione e adozione del paradigma SOA nel Web. Essi hanno un'interfaccia descritta in un formato eseguibile da una macchina, il \textbf{Web Services Description Language (WSDL)}, usato per interagire con il \textit{broker}. Tramite WSDL ogni \textit{service provider} si registra al \textit{service broker} mentre il \textit{service consumer} utilizza WSDL per cercare uno specifico servizio.
 Consumer e provider interagiscono tra loro usando il \textbf{Simple Object Access Protocol (SOAP)}.
 \begin{figure}[H]
@@ -1025,7 +1026,85 @@ Consumer e provider interagiscono tra loro usando il \textbf{Simple Object Acces
 \caption{Interazioni nei Servizi Web}
 \end{figure}
 
-\subsection{SOAP}
+\paragraph{SOAP}
+Fornisce una struttura standard di \textit{packaging} per la trasmissione di documenti XML su vari protocolli internet. Un messaggio in SOAP è formato da un elemento \textit{root} chiamato \textbf{SOAP envelope}, che ha al suo interno un \textbf{header} ed un \textbf{body}. L'header contiene alcune informazioni aggiuntive, tra cui quelle di sicurezza. Il body include il \textbf{payload}, con informazioni sulla richiesta/risposta, ed una \textbf{fault section} che include eventuali errori o eccezioni.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.7]{img/schemasoap.png}
+\caption{Struttura messaggio in SOAP}
+\end{figure}
+
+\paragraph{Esempi di Messaggi SOAP}
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.8]{img/soapRequest.png}
+\caption{Richiesta}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.8]{img/soapResponse.png}
+\caption{Risposta}
+\end{figure}
+
+\paragraph{WSDL}
+Fornisce uno standard per l'interfaccia e il set di operazioni supportate da un servizio web. Stabilisce anche il set di parametri in input o output delle operazioni di un servizio ed il modo in cui i messaggi saranno trasferiti da/verso di esso. Tramite un documento WSDL un client può capire cosa fa un servizio, dove è locato e come può essere invocato. Ogni volta che il client deve utilizzare un servizio web sconosciuto, ne richiede il documento WSDL, lo analizza per ricavarne le informazioni necessarie ed infine invoca il servizio tramite SOAP.
+\\ \\
+Un messaggio WSDL è un documento XML composto da due sezioni:
+\begin{itemize}
+    \item \textbf{Service Interface Definition}: definisce in maniera astratta il servizio. Comprende alcune informazioni tra cui il \textit{tipo} del dato (\textit{<types>...</types>}), i messaggi scambiati tra il provider ed il consumer (\textit{<message>...</message>}) e le operazioni che possono essere eseguite (\textit{<portTypes>...</portTypes>}).
+    \item \textbf{Service Implementation Definition}: definisce in maniera più specifica come deve essere invocato il servizio (\textit{<service>...</service>}), come trasferire i messaggi (\textit{<binding>...</binding>})
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics{img/WSDLMessage.png}
+\caption{Struttura generica Messaggio WSDL}
+\end{figure}
+
+Andando ad analizzare più nel dettaglio i vari \textit{tag} che compongono un messaggio WSDL abbiamo:
+\begin{itemize}
+    \item \textbf{Types}: usato per definire tipi complessi per i dati usati poi nel messaggio.
+        \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.8]{img/wsdlTypes.png}
+        \caption{Struttura tag Types}
+        \end{figure}
+    \item \textbf{Message}: usato per definire il formato dei messaggi scambiati tra client e servizio web. Possono essere definiti sia messaggi di input che di output.
+        \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.8]{img/wsdlMessageField.png}
+        \caption{Struttura tag Message}
+        \end{figure}
+    \item \textbf{PortType}: usato per legare input ed output in un'operazione logica.
+        \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.8]{img/wsdlPortTypes.png}
+        \caption{Struttura tag PortType}
+        \end{figure}
+    \item \textbf{Binding}: usato per specificare come sono scambiati i messaggi associati ad una operazione \textit{<PortType>}.
+        \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.8]{img/wsdlBinding.png}
+        \caption{Struttura tag Binding}
+        \end{figure}
+    \item \textbf{Service}: usato per specificare come un'operazione viene effettivamente invocata (tramite URI associato al servizio).
+        \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.8]{img/wsdlServiceField.png}
+        \caption{Struttura tag Service}
+        \end{figure}
+\end{itemize}
+
+\paragraph{\textit{Universal Description, Discovery, Integration} (UDDI)} 
+E' un protocollo indipendente dalle piattaforme utilizzate, basato su XML, che definisce un modo per pubblicare o scoprire informazioni sui servizi web. Usando l'UDDI un'azienda può registrare un WS ad un broker, mentre i client possono utilizzarlo per ricercare un certo WS e recuperarne le informazioni WSDL per poterlo poi invocare (tramite SOAP).
+
+\paragraph{\textit{Representational State Transfer} (REST)}
+Introdotto come alternativa più semplice per la creazione di servizi web, in quanto SOAP, richiedendo obbligatoriamente l'utilizzo di una struttura XML per lo scambio di messaggi, risultava essere un protocollo piuttosto complesso.
+REST fornisce un modello per la progettazione di sistemi software \textit{network-based} che utilizza una struttura \textit{client/server} con protocollo HTTP per il trasferimento dei messaggi. \\
+In un sistema RESTful, un client invia una richiesta usando i metodi standard di HTTP (\textit{PUT, GET, POST, DELETE}) ed il server invia una risposta che include la rappresentazione della risorsa specificata.
+I dati sono ancora trasmessi usando XML come parte del contenuto del messaggio HTTP, ma tutto il markup addizionale richiesto da SOAP viene rimosso.
+
 
 \subsection{Sistemi Distribuiti Message-oriented}
 Le applicazioni cloud sono sviluppate come sistemi distribuiti la cui implementazione è la composizione di diverse funzionalità su differenti VMs. Queste VMs sono raggruppate in strati (tier), dentro ognuno di questi strati, per garantire alta disponibilità e scalabilità, le VMs replicano le loro funzionalità; le richieste dei client vengono ricevute dalle VMs nel primo strato (frontend tier) e successivamente inviate agli altri strati (backend tier). 
@@ -2458,22 +2537,25 @@ Il bottleneck principale delle applicazioni MapReduce è lo scambio di messaggi 
     \item implementare In-Mapper combining, è un trade-off tra l'utilizzo della rete e l'utilizzo della memoria principale.
 \end{itemize}
 Vediamo come funziona quest'ultimo metodo.
-In ogni mapper creo un AssociativeArray (codice img 2) per contare quante occorrenze dello stesso termine ci sono (evitando di passare gli '1') che verranno inviate ai reducer. Se prima (codice img 1) avevo un file "ciao ciao ciao ciao ciao" venivano generate e inviate 5 coppie chiave valore (ciao, '1'), con l'array associativo invece verrebbe generata un'unica coppia chiave valore (ciao, '5'). Bisogna però considerare che così stiamo sfruttando la memoria per salvare l'array (trade-off). \\
-Possiamo fare un ulteriore miglioramento (codice img 3): invece di memorizzare l'array associativo al livello del metodo di map lo facciamo al livello di classe mapper, le chiavi così verranno generate una volta sola nel metodo 'close' quando tutti i documenti saranno stati processati. Questo è utile perchè non sappiamo a priori quanti possono essere i documenti che potrebbero essere moltissimi. 
+In ogni mapper creo un AssociativeArray (Figura \ref{Code2}) per contare quante occorrenze dello stesso termine ci sono (evitando di passare gli '1') che verranno inviate ai reducer. Se prima (Figura \ref{Code1}) avevo un file "ciao ciao ciao ciao ciao" venivano generate e inviate 5 coppie chiave valore (ciao, '1'), con l'array associativo invece verrebbe generata un'unica coppia chiave valore (ciao, '5'). Bisogna però considerare che così stiamo sfruttando la memoria per salvare l'array (trade-off). \\
+Possiamo fare un ulteriore miglioramento (Figura \ref{Code3}): invece di memorizzare l'array associativo al livello del metodo di map lo facciamo al livello di classe mapper, le chiavi così verranno generate una volta sola nel metodo 'close' quando tutti i documenti saranno stati processati. Questo è utile perchè non sappiamo a priori quanti possono essere i documenti che potrebbero essere moltissimi. 
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{img/In_mapper1.PNG}
     \caption{In-Mapper combining 1}
+    \label{Code1}
 \end{figure}
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{img/In_mapper2.PNG}
     \caption{In-Mapper combining 2}
+    \label{Code2}
 \end{figure}
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{img/In_mapper3.PNG}
     \caption{In-Mapper combining 3}
+    \label{Code3}
 \end{figure}
 Vediamo pro e contro del 'In-Mapper combining'.
 Vantaggi:
