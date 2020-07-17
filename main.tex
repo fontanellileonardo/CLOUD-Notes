@@ -15,6 +15,7 @@
 \usetikzlibrary{shapes,arrows}
 \usepackage[title]{appendix}
 \usepackage{hyperref}
+\newcommand*{\xml}[1]{\texttt{<#1>}}
 
 \title{Appunti di Cloud Computing}
 \author{\textit{Very Strategic Authors}}
@@ -33,6 +34,12 @@
 \tableofcontents
 \newpage
 
+{\Huge \textbf{Disclaimer}}\\ \\
+Questa dispensa è stata prodotta traducendo e integrando le slide di lezione con gli appunti presi in aula e con i libri di testo consigliati durante l'a.a.2019-20. Sicuramente ci saranno errori/imprecisioni oppure i contenuti del corso potrebbero mutare di anno in anno. Consigliamo alle future generazioni di integrare/migliorare questa dispensa negli anni a venire e di diffonderla nuovamente una volta aggiornata.\\
+Il codice sorgente LaTeX per modificarla è disponibile al seguente link:\\ \\
+\texttt{inserire link di file sharing quando sarà pronto}
+
+\newpage
 \section{Introduzione}
 \subsection{Storia del Modello Cloud}
 Cloud Computing è un modello per consentire l’accesso a risorse condivise che possono essere fornite e rilasciate rapidamente e col minimo sforzo di gestione.\\
@@ -226,7 +233,7 @@ La scelta del modello più appropriato del modello dipende dai requisiti di busi
 Il modello NIST definisce tre principali modelli di erogazione del servizio, dipendentemente dal tipo di servizio offerto ai clienti e da come viene fornito: \textit{IaaS, Paas} e \textit{SaaS}.\\
 Questi modelli di erogazione sono ben stabiliti al giorno d’oggi e offerti da quasi ogni cloud provider sul mercato. I diversi tipi di modelli si distinguono tra loro per il livello di astrazione dall’infrastruttura hardware.
 
-\subsubsection{IaaS}
+\subsubsection{IaaS - Infrastructure as a Service}
 Consegna ai clienti le risorse hardware virtualizzate e fornisce la possibilità di utilizzare da remoto le risorse computazionali virtuali. Queste risorse possono essere usate come fossero hardware reale per creare qualsiasi VM.
 
 \begin{figure}[H]
@@ -238,7 +245,7 @@ Consegna ai clienti le risorse hardware virtualizzate e fornisce la possibilità
 Il consumatore non deve più gestire e controllare l’infrastruttura computazionale che è, invece, gestita dal provider: deve però continuare a prendersi cura delle componenti di piattaforma e applicazione (Installazione OS, middleware software, sviluppo dell’applicazione e gestione dati).\\
 IaaS rimuove i costi di costruzione e mantenimento di una infrastruttura fisica, con un buon controllo dell’ambiente dove sviluppare i servizi.
 
-\subsubsection{PaaS}
+\subsubsection{PaaS - Platform as a Service}
 Fornisce ai consumatori l’accesso a una piattaforma in cui essi possono progettare e sviluppare le componenti delle applicazioni.\\
 Il consumatore deve occuparsi solo della programmazione del livello applicazione e della gestione dei dati, gli altri aspetti dall’infrastruttura fisica alla piattaforma middleware verranno gestite dal provider.
 \begin{figure}[H]
@@ -249,7 +256,7 @@ Il consumatore deve occuparsi solo della programmazione del livello applicazione
 \noindent
 Il consumatore sviluppa la sua logica applicativa all’interno dell’ambiente di programmazione fornito dal provider. Il grande svantaggio di questo approccio è la mancanza di flessibilità: le applicazioni devono essere programmate con le API fornite dal sistema e le applicazioni cosi programmate sono quindi difficilmente portabili da una piattaforma cloud a un’altra.
 
-\subsubsection{SaaS}
+\subsubsection{SaaS - Software as a Service}
 Il provider consegna come servizio ai clienti direttamente delle applicazioni. Queste applicazioni sono sviluppate dal provider e solitamente offerte ai consumatori attraverso un’interfaccia web.
 \begin{figure}[H]
     \centering
@@ -286,7 +293,7 @@ La figura sottostante rappresenta il concetto base di virtualizzazione in una fo
     \includegraphics[scale=0.5]{img/virtualization technologies.png}
     \caption{Modello di virtualizzazioni}
 \end{figure}\noindent
-In parole povere, la virtualizzazione è la separazione logica delle risorse fisiche che fa sì che gli utenti non possano accederci direttamente per soddisfare le loro esigenze anche se, alla fine, le risorse fisiche sono coloro che forniranno i servizi richiesti. Quindi la virtualizzazione è colei che andrà a fornire un livello di astrazione logica. \\
+In parole povere, la virtualizzazione è la separazione logica delle risorse fisiche che fa sì che gli utenti non possano accedervi direttamente per soddisfare le loro esigenze anche se, alla fine, le risorse fisiche sono coloro che forniranno i servizi richiesti. Quindi la virtualizzazione è colei che andrà a fornire un livello di astrazione logica. \\
 L'astrazione è il processo che nasconde le caratteristiche complesse e non essenziali di un sistema. Attraverso l'astrazione, un sistema può essere presentato in modo semplificato per un uso particolare nascondendo agli utenti dettagli indesiderati. Nell'informatica, l'astrazione viene implementata attraverso gli strati del software. Lo strato del sistema operativo può essere trattato come uno strato di astrazione. \\
 Nel cloud computing la virtualizzazione delle risorse (che aggiunge uno strato software alle risorse di elaborazione fisica per creare risorse virtuali) funge da strato di astrazione. La sua astrazione rende più facile offrire un servizio più flessibile, affidabile e potente. \\
 Ogni tipo di risorsa IT può essere virtualizzata: dai dispositivi base (processore, RAM, ecc) ad altre risorse come la memoria, dispositivi network o periferiche (tastiere, mouse, stampanti, ecc). Tuttavia, va notato che nel caso delle risorse di elaborazione di base un componente virtualizzato può essere operativo solo quando una risorsa fisica lo abilita dal back-end. Ad esempio, un processore virtuale può funzionare solo quando è collegato un processore fisico. \\
@@ -333,8 +340,13 @@ Le VM vengono create sopra ai livelli di virtualizzazione. Questo livello di vir
     \item Controlla e monitora l'esecuzione delle VM su di esse. 
 \end{itemize}
 Questo livello software è chiamato \textit{Hypervisor} o \textbf{Virtual Machine Monitor} (VMM). Il VMM crea una astrazione del livello software e/o hardware sottostante e rappresenta le risorse del sistema virtuale per i suoi utenti. Questo livello facilita anche l’esistenza di più macchine virtuali che non sono obbligate a condividere lo stesso kernel del sistema operativo (sottostante). Per questo motivo diventa possibile eseguire diversi sistemi operativi sulle macchine virtuali che sono state create sopra ad un VMM. Il VMM fornisce una console di sistema amministrativa attraverso la quale è possibile gestire l’ambiente del sistema virtuale (come il numero di componenti virtuali o la capacità dei vari componenti). \\
-Le tecniche di virtualizzazione che si basano sul VMM possono essere suddivise in tre categorie: \textit{Full virtualization}, \textit{Para-virtualization} e \textit{Hardware-assisted virtualization}. \\
-Esistono due diverse tecniche di \textit{Server/Machine virtualization}, l’\textit{hosted approach} e il \textit{bare metal approach} che variano a seconda del tipo di hypervisor utilizzato. Sebbene le tecniche siano diverse hanno lo stesso obiettivo finale, creare una piattaforma in cui più macchine virtuali possono condividere le stesse risorse di sistema. Ogni tecnica è semplicemente un modo diverso di raggiungere questo obiettivo.
+Le tecniche di virtualizzazione che si basano sul VMM possono essere suddivise in tre categorie: \textit{Full virtualization}, \textit{Para-virtualization} e \textit{Hardware-assisted virtualization}.
+
+Esistono due diverse tipologie di Hypervisor: l’\textit{hosted approach} e il \textit{bare metal approach}. Sebbene le tecniche siano diverse hanno lo stesso obiettivo finale, creare una piattaforma in cui più macchine virtuali possono condividere le stesse risorse di sistema. Ogni tecnica è semplicemente un modo diverso di raggiungere questo obiettivo.
+
+\paragraph{Meccanismo \textit{Trap-and-Emulate}}
+Meccanismo tramite il quale vengono intercettate delle interruzioni/eccezioni o comunque operazioni che non possono essere eseguite da un guest OS. Le trap sono usate dall'Hypervisor per intercettare queste chiamate, eseguirle al posto della VM e, alla fine, fornire al guest OS i dati come se avesse eseguito esso stesso il codice.
+Lo svantaggio principale è l'overhead generato a causa del dover emulare le istruzioni.
 
 \subsubsection{Hosted Approach}
 In questo approccio, un sistema operativo viene prima installato sulla macchina fisica per poterlo attivare. Il sistema operativo installato sul computer host viene definito \textit{\textbf{host operating system}}. L'hypervisor viene quindi installato su questo host OS. Questo tipo di hypervisor viene definito \textit{\textbf{hypervisor di tipo 2}} o \textit{\textbf{hosted hypervisor}}. La figura sottostante rappresenta la tecnica di virtualizzazione dell’hosted machine.
@@ -768,6 +780,8 @@ Per ogni macchina virtuale sono necessari dei dati aggiuntivi:
     \item Posted Interrupt Descriptor (PID)
 \end{itemize}
 L’IRT ha un’entrata per ogni possibile INT, ciascuna delle quali mappa la richiesta ad un \textit{vettore di interruzione}\footnotemark  di una CPU o un PID. Quando arriva un segnale di INT la tabella IRT decide se verrà gestita da un vettore di interruzione oppure da un PID (in caso sia abilitato il meccanismo delle interruzioni posticipate).
+
+Lo \textbf{svantaggio} principale dell'\textit{hardware passthrough} è che in caso di molteplici VM in esecuzione su un unico sistema fisico, l'Hypervisor deve garantire l'esclusività periferica passthrough ad una sola VM alla volta.
 \footnotetext{: serve per notificare una INT al processore virtuale.}
 
 \paragraph{Virtualizzazione Annidata}
@@ -951,7 +965,7 @@ Adotta un approccio \textit{“divide et impera”}:
 \end{itemize}
 Un esempio di applicazione di questo approccio si ha negli algoritmi di ricerca nel web: i dati del web sono tantissimi per essere gestiti da una sola macchina, perciò i dati da analizzare, per la ricerca di determinate parole chiave, vengono suddivisi in \textit{chunk} e assegnati a differenti \textit{workers}, un \textit{collector} riceve tutti i risultati da questi ultimi e li aggrega.
 \paragraph{Architettura in un CI Cluster}
-Per garantire la scalabilità con un elevato numero di richieste è necessario prima di tutto introdurre un livello \textit{load balancer} (obbligatorio in applicazioni pubbliche come un motore di ricerca). Dopodichè, ogni istanza nel livello applicazione divide i dati in \textit{chunk} e crea una lista di textit{jobs}. Il dataset iniziale è contenuto nello spazio di archiviazione condiviso (\textit{storage tier}) in quanto è impossibile salvare in locale in ogni nodo tutti i dati e garantirne la coerenza (sincronizzazione), per via della dimensione dei dati. I Job sono distribuiti poi tra i vari workers che appartengono ad una infrastruttura distribuita di elaborazione (insieme di VMs), la quale può avere accesso diretto allo Storage Tier, così i nodi del livello applicazione non dovranno inviare interamente i dati ma solo dei puntatori, con i quali i workers potranno poi accedere direttamente alla porzione di informazioni ad essi assegnata nello storage tier, evitando così un overhead nello scambio di dati tra un livello e l'altro.
+Per garantire la scalabilità con un elevato numero di richieste è necessario prima di tutto introdurre un livello \textit{load balancer} (obbligatorio in applicazioni pubbliche come un motore di ricerca). Dopodichè, ogni istanza nel livello applicazione divide i dati in \textit{chunk} e crea una lista di \textit{jobs}. Il dataset iniziale è contenuto nello spazio di archiviazione condiviso (\textit{storage tier}) in quanto è impossibile salvare in locale in ogni nodo tutti i dati e garantirne la coerenza (sincronizzazione), per via della dimensione dei dati. I Job sono distribuiti poi tra i vari workers che appartengono ad una infrastruttura distribuita di elaborazione (insieme di VMs), la quale può avere accesso diretto allo Storage Tier, così i nodi del livello applicazione non dovranno inviare interamente i dati ma solo dei puntatori, con i quali i workers potranno poi accedere direttamente alla porzione di informazioni ad essi assegnata nello storage tier, evitando così un overhead nello scambio di dati tra un livello e l'altro.
 
 \begin{figure}[H]
 \centering
@@ -1052,8 +1066,8 @@ Fornisce uno standard per l'interfaccia e il set di operazioni supportate da un 
 \\ \\
 Un messaggio WSDL è un documento XML composto da due sezioni:
 \begin{itemize}
-    \item \textbf{Service Interface Definition}: definisce in maniera astratta il servizio. Comprende alcune informazioni tra cui il \textit{tipo} del dato (\textit{<types>...</types>}), i messaggi scambiati tra il provider ed il consumer (\textit{<message>...</message>}) e le operazioni che possono essere eseguite (\textit{<portTypes>...</portTypes>}).
-    \item \textbf{Service Implementation Definition}: definisce in maniera più specifica come deve essere invocato il servizio (\textit{<service>...</service>}), come trasferire i messaggi (\textit{<binding>...</binding>})
+    \item \textbf{Service Interface Definition}: definisce in maniera astratta il servizio. Comprende alcune informazioni tra cui il \textit{tipo} del dato \xml{types}...\xml{/types}, i messaggi scambiati tra il provider ed il consumer (\xml{message}...\xml{/message}) e le operazioni che possono essere eseguite \xml{portTypes}...\xml{/portTypes>}.
+    \item \textbf{Service Implementation Definition}: definisce in maniera più specifica come deve essere invocato il servizio \xml{service}...\xml{/service}, come trasferire i messaggi\\ \xml{binding}...\xml{/binding}
 \end{itemize}
 
 \begin{figure}[H]
@@ -1082,7 +1096,7 @@ Andando ad analizzare più nel dettaglio i vari \textit{tag} che compongono un m
         \includegraphics[scale=0.8]{img/wsdlPortTypes.png}
         \caption{Struttura tag PortType}
         \end{figure}
-    \item \textbf{Binding}: usato per specificare come sono scambiati i messaggi associati ad una operazione \textit{<PortType>}.
+    \item \textbf{Binding}: usato per specificare come sono scambiati i messaggi associati ad una operazione \xml{PortType>}.
         \begin{figure}[H]
         \centering
         \includegraphics[scale=0.8]{img/wsdlBinding.png}
@@ -1386,15 +1400,15 @@ In caso di partizionamento della rete (scenario \textit{split-brain}), alcuni de
 Se il cluster è stato suddiviso in diversi componenti indipendenti, ogni componente potrebbe pensare di essere una sorta di "cluster master" e di poter continuare a processare le richieste dell'utente portando ad un'inconsistenza dei dati. Per evitare che questo possa succedere, solo il componente con più nodi viene tenuto attivo mentre tutti gli altri vengono spenti.
 
 \subsection{Load Balancing}
-Pensiamo ad un'applicazione cloud disponibile a centinaia di milioni di utenti nel mondo (es. Google con 5,4 miliardi di richieste al giorno). I problemi principali da affrontare sono la scalabilità e la gestione del carico. Per questo è necessario disporre di un cluster di VM per operare il load balancing. Tuttavia, questa soluzione potrebbe non essere sufficiente in quanto il numero massimo di rischieste è comunque limitato dai vincoli fisici dell'infrastruttura di rete che serve per trasmettere i dati dai client alle VM.\\
-Per mitigare questo \textit{bottleneck}, il cluster delle VM è sparso in diverse località del pianeta detti \textit{datacenter}. Il risultato che si ottiene è una naturale suddivisione del carico in diverse località con diverse infrastrutture di rete.
+Pensiamo ad un'applicazione cloud su scala globale, disponibile a centinaia di milioni di utenti nel mondo (es. Google con 5,4 miliardi di richieste al giorno). I problemi principali da affrontare sono la scalabilità e la gestione del carico. Per questo è necessario disporre di un cluster di VM per operare il load balancing. Tuttavia, questa soluzione potrebbe non essere sufficiente in quanto il numero massimo di rischieste è comunque limitato dai vincoli fisici dell'infrastruttura di rete che serve per trasmettere i dati dai client alle VM.\\
+Per mitigare questo \textit{bottleneck}, il cluster delle VM è sparso in diverse località del pianeta detti \textit{datacenter}, opportunamente dimensionati rispetto al numero di utenti in una determinata regione. Il risultato che si ottiene è una naturale suddivisione del carico in diverse località con diverse infrastrutture di rete.
 \subsubsection{Approccio Globale e Locale}
 Il bilanciamento del carico può essere operato a livello locale o globale:
-\begin{itemize}
-    \item \textbf{Locale:} decido quali VM servono una particolare richiesta dentro al datacenter. Solitamente mirato al bilanciamento del carico per ottenere scalabilità.
-    \item \textbf{Globale:} distribuisco le richieste attraverso diversi datacenter.
-\end{itemize}
-Noi ci occuperemo di load balancing \textbf{globale} dove esistono diverse e più complesse politiche che dipendono dall'applicazione in uso.
+\begin{enumerate}
+    \item \textbf{Globale:} distribuisco le richieste attraverso diversi datacenter. Decido verso quale datacenter inoltrare la richiesta dell'utente in base ad un qualche criterio (es. distanza).
+    \item \textbf{Locale:} dentro un determinato datacenter, decido quali VM servono una particolare richiesta. Solitamente mirato al bilanciamento del carico per ottenere scalabilità.
+\end{enumerate}
+Vediamo alcune \textbf{politiche di global load balancing}.
 \paragraph{Soluzione con DNS}
 Prima che il client invii una richiesta, deve scoprire l'indirizzo IP tramite il servizio DNS. Vogliamo sfruttare questa fase per introdurre un primo strato di distribuzione del carico. Una possibile soluzione potrebbe essere quella di far restituire al DNS più indirizzi IP per una singola richiesta: a questo punto sarà il client a sceglierne uno. Abbiamo così introdotto un primo livello di distribuzione del carico.\\
 Tuttavia, questa soluzione offre pochissimo controllo sul comportamento del client il quale sceglie un indirizzo casualmente, senza prendere in considerazione la distanza (o altre metriche di costo). Per mitigare questo effetto si potrebbe pensare di utilizzare un indirizzo \textit{anycast}\footnotemark per il servizio DNS ma quello che vorremmo è una soluzione con un controllo \textit{fine-grained} (granulare?).
@@ -1408,7 +1422,7 @@ Un set di VIP sono assegnati ad un'applicazione mentre un singolo VIP di questo 
     \caption{Incapsulamento pacchetti e Tunnel GRE}
 \end{figure}\noindent
 Il global load balancer incapsulerà il pacchetto del client in un nuovo pacchetto IP che sarà spedito al datacenter. Quest'ultimo, aprirà il pacchetto e vi troverà al suo interno quello originale del client. In questo modo è come se il client avesse inviato il pacchetto direttamente al datacenter.\\
-La comunicazione tra load balancer e datacenter viene gestita tramite un tunnel GRE (\textit{Generic Routing Encapsulation}) che permette di incapsulare pacchetti IP dentro altri pacchetti IP.
+La comunicazione tra load balancer e datacenter viene gestita tramite un tunnel GRE (\textit{Generic Routing Encapsulation}) che permette di incapsulare pacchetti IP dentro altri pacchetti IP. In questo modo il \textit{global load balancer} può spedire il pacchetto attraverso un percoso preciso verso il datacenter più opportuno.\footnotemark \footnotetext{: se non incapsuliamo in un tunnel il pacchetto spedito dal global LB ritornerebbe in ingresso allo stesso global LB in quando l'IP destinatario del pacchetto è il VIP.}
 
 \subsection{Consistenza e Affidabilità}
 I sistemi cloud distribuiti su scala mondiale devono avere una visione consistente dello stato del sistema e dei dati attraverso molteplici siti. La replicazione e sincronizzazione dei dati è una sfida importante per i sistemi distribuiti in quanto:
@@ -1466,7 +1480,7 @@ Ovviamente nei sistemi BASE possono verificarsi delle inconsistenze quando, ad e
 
 \subsubsection{Architettura Bayou}
 E' un'architettura di tipo \textit{eventually-consistent} che fornisce repliche dei dati per alta \textit{availablity} ma poche garanzie sulla consistenza sequenziale.\\
-Quando viene ricebuta una update, questa assume lo stato di \textit{tentative}. Finchè una update è \textit{tentative}, il sistema può annullarla o ri-eseguirla a seconda di cosa è necessario per raggiungere la consistenza.\\
+Quando viene ricevuta una update, questa assume lo stato di \textit{tentative}. Finchè una update è \textit{tentative}, il sistema può annullarla o ri-eseguirla a seconda di cosa è necessario per raggiungere la consistenza.\\
 Quando una update viene eseguita (commit), le modifiche rimangono applicate. In qualunque momento lo stato del sistema deriva dalla sequenza di update che sono state applicate, seguite dalla sequenza di update \textit{tentative}.
 \begin{figure}[H]
     \centering
@@ -1507,11 +1521,8 @@ L'architettura generale delle piattaforme cloud è semplice:
     \caption{Architettura Piattaforma Cloud}
 \end{figure}\noindent
 
-\subsubsection{OpenStack}
-\textit{OpenStack} è una piattaforma software open-source per il cloud computing modello IaaS e è la soluzione principale adottata per il modello privato di cloud computing.
-
-\paragraph{OpenStack Piattaforma Software}
-\textit{OpenStack} non richiede hardware particolarmente potente per funzionare. Il software è installato su ogni server e funziona sul sistema operativo dell'host; ognuno di questi server è chiamato \textbf{OpenStack Node}.\\
+\subsection{OpenStack}
+\textit{OpenStack} è una piattaforma software open-source per il cloud computing modello IaaS e è la soluzione principale adottata per il modello \textbf{privato} di cloud computing. Non richiede hardware particolarmente potente per funzionare. Il software è installato su ogni server e funziona sul sistema operativo dell'host; ognuno di questi server è chiamato \textbf{OpenStack Node}.\\
 \textit{OpenStack}, sfruttando i singoli hypervisor, crea e distrugge le macchine virtuali.
 La piattaforma gestisce la connessione delle macchine virtuali alla Rete Virtuale, utilizzata per comunicare con le altre macchine e con le reti esterne.
 Inoltre essa gestisce lo spazio di archiviazione, questo permette la creazione di dischi rigidi virtuali da collegare alla macchina virtuale.
@@ -1521,8 +1532,6 @@ Inoltre essa gestisce lo spazio di archiviazione, questo permette la creazione d
     \includegraphics[scale=0.5]{img/os_platform.png}
     \caption{OpenStack Piattaforma Software}
 \end{figure}\noindent
-
-\paragraph{Istanza di OpenStack}
 I nodi che eseguono \textit{OpenStack} sono configurate per formare una singola \textbf{istanza di OpenStack} combinando insieme capacità di computazione, memoria e archiviazione per creare le macchine virtuali.\\
 In una singola istanza almeno un nodo è configurato come \textbf{controller} che ha il compito di coordinare le funzioni di OpenStack e gestire le risorse dell'istanza. Gli altri nodi sono configurati come \textbf{nodi computazionali} che offrono le risorse per eseguire le macchine virtuali. \\
 I nodi sono connessi attraverso una LAN ad altà velocità reale, utilizzata come
@@ -1926,7 +1935,7 @@ Di nuovo, lo storage State deve essere replicato tra i nodi controller.
     \includegraphics[scale=0.3]{img/high availability 3.png}
     \caption{High Availability con ridondanza semplice}
 \end{figure}\noindent
-
+\newpage
 \subsection{Piattaforme Cloud Computing leggere per DevOps}
 \subsubsection{Development del Software - PRIMA}
 Alcuni anni fa, la maggior parte delle applicazioni software erano grossi monoliti, che giravano come un singolo processo o un piccolo numero di processi. Avevano dei tempi di rilascio molto lenti e avevano degli aggiornamenti poco frequenti dato che il development era complesso e poco pratico: i developer solitamente confezionavano l'intero sistema e lo consegnavano al team operativo, il team o gli amministratori responsabili di gestire le infrastrutture (i server). Cambiare una parte dell'applicazione richiedeva il redesign dell'intera applicazione. \\
@@ -1975,7 +1984,7 @@ I meccanismi di virtualizzazione leggera, come ad esempio i container, possono e
 I container possono essere usati per preparare un ambiente virtualizzato in cui le librerie e le dipendenze sono pre-installate e configurate per far girare una certa applicazione o un servizio, parte di un'applicazione. \\ 
 In più i container possono essere facilmente spediti e installati su differenti macchine utilizzando un sistema di distribuzione ad-hoc che si prende cura di distribuire e installare le immagini su differenti macchine. Un esempio di questo è \textit{Docker}.
 
-\subsubsection{Kubernetes}
+\subsection{Kubernetes}
 Kubernetes è un sistema software implementato da \textit{Google}, consente di implementare e gestire facilmente applicazioni containerizzate su di esso. \\ Un'applicazione containerizzata è un'applicazione i cui componenti (servizi indipendenti) sono distribuiti e spediti come contaniner differenti. \\
 Kubernetes mira a semplificare completamente il processo generale di distribuzione e gestione dei container che compongono l'applicazione, occupandosi degli aspetti relativi alla scalabilità, tolleranza agli errori, gestione delle risorse, ecc. L'obiettivo è quello di offrire un'infrastruttura IaaS leggera per distribuire le applicazioni in un modo semplice ed efficace, cosicché i programmatori possono occuparsene senza pensare ad altri aspetti. \\ 
 Il team operativo è sempre richiesto, in questo caso, tuttavia, è responsabile di mantenere e far girare l'infrastruttura di Kubernetes. \\
@@ -2083,8 +2092,9 @@ Il modello di memorizzazione dei dati di un sistema di calcolo tradizionale cons
     \centering
     \includegraphics[scale=0.7]{img/raid.jpg}
     \caption{Schemi RAID}
+    \label{fig:raid}
 \end{figure}\noindent
-In figura sono riportati gli schemi RAID più popolari. In particolare, lo schema 0 è adottato per massimizzare le prestazioni. Lo schema 1 massimizza la ridondanza ed infine lo schema 5 propone una via di mezzo tra la 0 e la 1: vengono introdotti dei blocchi di parità (ottenuti tramite XOR).\\ \\
+In figura \ref{fig:raid} sono riportati gli schemi RAID più popolari. In particolare, lo schema 0 è adottato per massimizzare le prestazioni ma non offre replica dei blocchi. Lo schema 1 massimizza la ridondanza a scapito delle prestazioni. Lo schema 5 propone una soluzione di compromesso tra la 0 e la 1: vengono introdotti dei blocchi di parità (ottenuti tramite XOR tra due blocchi) che vengono salvati su dischi diversi rispetto a quello calcolato (es. il blocco di parità 1 ottenuto come \( A \otimes B \) viene salvato sul disco 3).\\ \\
 Nonostante le ottimizzazioni introdotte da RAID, la capacità di memoria massima è limitata dal numero fisico di slot per hard-drive sul server. In particolare, i requisiti di memorizzazione delle piattaforme cloud sono diversi da quelli dei sistemi tradizionali. Il requisito principale è la scalabilità della memoria ovvero vogliamo avere un supporto di memorizzazione che si adatta alla quantità di dati immagazzinati.
 
 \subsubsection{File System Distribuito}
@@ -2096,7 +2106,7 @@ Un altro motivo per il quale vogliamo implementare un sistema di memorizzazione 
 Il fatto che richieda soluzione hardware \textit{ad-hoc} rende le tecnologie SAN complesse e costose, per questo motivo non tutte le piattaforme cloud se lo possono permettere. Per questo motivo esistono altre tecnologie che si propongono per offrire un sistema di memorizzazione unificato, scalabile, performante e poco costoso (basato quindi su hardware general-purpose). Una delle più popolari al momento è Ceph.
 
 \subsection{Ceph}
-Ceph fornisce un sistema di memorizzazione robusto, affidabile e di livello \textit{enterprise}. Gestisce autonomamente le repliche dei dati e il recupero dai fallimenti. Non c'è più bisogno di impiegare tecnologie quali il RAID. Può essere installato su dei server normali per creare un DFS (detto anche Ceph cluster) in cui la capacità di tutti gli hard-drive è messa a disposizione.
+Ceph fornisce un sistema di memorizzazione robusto, affidabile e di livello \textit{enterprise} costruito sopra ad un set di \textit{Hard Drives} di tipo \textit{commodity} (quindi di basso costo/uso comune). Gestisce autonomamente le repliche dei dati e il recupero dai fallimenti. Non c'è più bisogno di impiegare tecnologie quali il RAID. Può essere installato su dei server normali per creare un DFS (detto anche Ceph cluster) in cui la capacità di tutti gli hard-drive è messa a disposizione.
 
 \subsubsection{Architettura}
 Un sistema Ceph è composto da nuemrosi servizi software separati fra loro, ciascuno che si occupa di una diversa funzionalità. I client (che possono essere applicazioni o servizi cloud) interagiscono con questi servizi software.
@@ -2105,17 +2115,20 @@ Un sistema Ceph è composto da nuemrosi servizi software separati fra loro, cias
     \includegraphics[scale=0.3]{img/ceph.jpg}
     \caption{Architettura Ceph}
 \end{figure}\noindent
-In Ceph tutto è salvto sotto forma di oggetti (anche di dimensioni enormi). Gli oggetti Ceph sono salvati in \textit{Object-based Storage Device (OSD)} secondo un approccio replicato. Il processo daemon OSD si occupa di trascrivere l'oggetto in un file nel FS OSD.\\
 Al centro di Ceph abbiamo \textbf{RADOS} (\textit{Reliable Autonomic Distributed Object Store}) il quale è responsabile della memorizzazione degli oggetti. Il livello RADOS fa si che i dati rimangano sempre in uno stato consistente e affidabile, esegue le repliche dei dati, rilevamento dei fallimenti \& recupero e bilanciamento dei dati redistribuendo tra i nodi del cluster. Un'applicazione che vuole interagire con RADOS può farlo grazie ad una libreria (LIBRADOS) che fornisce un'interfaccia nativa disponibile per diversi linguaggi di programmazione.\\
+I servizi di RADOS sono:
+\begin{itemize}
+    \item \textbf{OSD} \textit{(Object-based Storage Device)}: In Ceph tutto è salvto sotto forma di oggetti (anche di dimensioni enormi) secondo un approccio replicato.
+    \item \textbf{MON} \textit{(Ceph Monitor)}: è responsabile per monitorare lo stato di "salute" del cluster Ceph. Questi servizi MON si occupano di memorizzare informazioni critiche sul cluster quali stato e configurazione. Un set di istanze MON viene avviato per garantire la tolleranza dei fallimenti.
+\end{itemize}
 Ceph offre la possibilità di utilizzare dei metodi di memorizzazione alternativi a quello a oggetti. Per fare ciò esistono servizi aggiuntivi sopra a LIBRADOS.
 \begin{itemize}
     \item \textbf{Ceph Block Device} (RBD in figura): fornisce il \textit{block storage}.
     \item \textbf{Ceph FS }: offre un DFS di qualunque dimensione.
 \end{itemize}
-Esiste il Ceph Monitor (\textbf{MON}) che è responsabile per monitorare lo stato di "salute" del cluster Ceph. Questi servizi MON si occupano di memorizzare informazioni critiche sul cluster quali stato e configurazione. Un set di istanze MON viene avviato per garantire la tolleranza dei fallimenti.
 
 \subsubsection{Algoritmo CRUSH}
-CRUSH - Controlled Replication Under Scalable Hashing\\
+CRUSH, acronimo di \textit{Controlled Replication Under Scalable Hashing}, si occupa dello storage dei dati.\\
 I Ceph Client e gli OSD usano questo algoritmo per calcolare in maniera efficiente dov'è memorizzato un oggetto. In questo modo possono scoprire dov'è un oggetto in maniera indipendente, senza fare affidamento ad una tabella di lookup centralizzata. CRUSH calcola la posizione di un oggetto in base allo stato attuale del cluster.\\
 Lo stato del cluster è rappresentato attraverso una \textit{Cluster Map} (ottenibile da una qualsiasi istanza monitor MON) che contiene le seguenti informazioni:
 \begin{itemize}
@@ -2169,6 +2182,26 @@ Dopodiché, introduciamo i \textbf{partitioner} per dividere in modo bilanciato 
     \includegraphics[scale=0.4]{img/partitioner.jpg}
     \caption{Partitioner}
 \end{figure}\noindent
+\subsection{Programmazione funzionale}
+Perché si utilizza un approccio matematico per risolvere problemi, perché è più semplice e meno astratto rispetto alla programmazione ad oggetti, è di facile utilizzo e gestisce la concorrenzialità. \\
+Principi della programmazione funzioanale:
+\begin{itemize}
+    \item \textbf{Purità:} le funzioni \textit{pure} agiscono sui propri parametri. Non sono efficienti se non ritornano niente. Produrranno lo stesso output per gli stessi parametri (\textit{idempotenza}). Non hanno effetti secondari.
+    \item \textbf{Immutabilità:} Non ci sono variabili nella programmazione funzionale, tutte le variabili dovrebbero essere considerate come costanti. Quindi, quando si vanno a modificare variabili? \\
+    Soltanto per variabili "locali" a breve vita, strutture con un flow a loop e oggetti stato.
+    \item \textbf{Funzioni di alto ordine:} Nella programmazione funzionale, una funzione è un oggetto di prima classe del linguaggio. \\
+    Un linguaggio funzionale supporta:
+    \begin{itemize}
+        \item costruire nuove funzioni a runtime
+        \item salvarle in variabili
+        \item passarle come argomenti ad altre funzioni
+        \item ritornarle come valori di altre funzioni
+    \end{itemize}
+    Le funzioni di alto ordine sono conosciute anche: "closures" e funzioni anonime. \\
+    Una closure è una variabile che salva: una funzione o un ambiente (tiene traccia delle variabili a cui si possono riferire). Una closure può continuare ad accedere allo scope di una funzione (ovvero le sue variabili), anche una volta che la funzione ha finito di eseguire.
+    \item \textbf{Composizione:} Applicazione di una funzione f, al risultato di un'altra funzione g per produrre una terza funzione h: $g = f(g(x))$
+    \item \textbf{Currying:} Currying è il processo di trasformazione di una funzione con arità multiple in una funzione con meno arità. Il termine \textit{arità} si riferisce al numero di argomenti che la funzione prende. Una funzione che prende 2 argomenti, uno da X e l'altro da Y e produce output in Z, attraverso il curring è tradotto in una funzione che prende un singolo argomento da X e produce come output funzioni da Y a Z.
+\end{itemize}
 
 \newpage
 \section{Hadoop}
@@ -2499,8 +2532,8 @@ Ogni nodo gestore nel cluster YARN periodicamente manda una richiesta "heartbeat
     \end{itemize}
     Quando l'applicazione master ha una notifica di un task fallito, rischedula l'esecuzione di quel task e cercherà di evitare di rischedularlo sul nodo gestore che aveva precedentemente fallito.
     \item \textbf{Fallimento dell'applicazione master:} il gestore delle risorse rileva il fallimento e inizializza una nuova instanza del master da eseguire in un nuovo container (gestito dal nodo gestore). Il client adesso deve richiedere al gestore delle risorse, l'indirizzo della nuova applicazione master (questo processo è trasparente all'utente). Se un'applicazione master MapReduce fallisce due volte, non sarà nuovamente ritentata e il job sarà considerato fallito.
-    \item \textbf{Fallimento del nodo gestore:} Il gestore delle risorse nota che un nodo gestore ha smesso di mandare "heartbeats" da 10 minuti. Quindi, il gestore delle risorse rimuoverà quel nodo dalla lista di nodi su cui può schedulare container. Ogni task o applicazioni master che eseguono su quel nodo che ha fallito, sarà considerato fallito a sua volta. Questi nodi gestori potrebbero anche essere messi in blacklist se il numero di fallimenti è alto. Questa operazione di blacklisting è fatta dall'applicazione master.
-    \item \textbf{Fallimento del gestore delle risorse:} nella configurazione di default, il gestore delle risorse è un punto di fallimento. Per ottenere alta disponibilità, è necessario eseguire una coppia di gestori risorse in una configurazione "attivo-standby". Le informazioni relative a tutte le applicazioni che sono eseguite sono salvate in uno store ad alta disponibilità. Il gestore delle risorse in standby può recuperare lo stato del gestore delle risorse attivo che ha fallito. La transizione di un gestore delle risorse da standby ad attivo è gestita da un controller di "failover". Questo controller, di default utilizza un'elezione di leader per garantire che ci sia soltanto un gestore di risorse attivo alla volta.
+    \item \textbf{Fallimento del Node Manager:} Il gestore delle risorse nota che un nodo gestore ha smesso di mandare "heartbeats" da 10 minuti. Quindi, il gestore delle risorse rimuoverà quel nodo dalla lista di nodi su cui può schedulare container. Ogni task o applicazioni master che eseguono su quel nodo che ha fallito, sarà considerato fallito a sua volta. Questi nodi gestori potrebbero anche essere messi in blacklist se il numero di fallimenti è alto. Questa operazione di blacklisting è fatta dall'applicazione master.
+    \item \textbf{Fallimento del Resource Manager:} nella configurazione di default, il gestore delle risorse è un punto di fallimento. Per ottenere alta disponibilità, è necessario eseguire una coppia di gestori risorse in una configurazione "attivo-standby". Le informazioni relative a tutte le applicazioni che sono eseguite sono salvate in uno store ad alta disponibilità. Il gestore delle risorse in standby può recuperare lo stato del gestore delle risorse attivo che ha fallito. La transizione di un gestore delle risorse da standby ad attivo è gestita da un controller di "failover". Questo controller, di default utilizza un'elezione di leader per garantire che ci sia soltanto un gestore di risorse attivo alla volta.
 \end{itemize}
 
 \paragraph{Esecuzione speculativa}
