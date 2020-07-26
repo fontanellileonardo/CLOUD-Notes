@@ -776,8 +776,13 @@ Nel secondo caso (utilizzato nell’approccio \textit{passthrough}) l’hardware
 Per realizzare tutto ciò sono state implementate le \textbf{Interruzioni Posticipate} (posted interrupts) le quali consentono di salvare i segnali di INT per poi notificarli in un secondo momento alla macchina virtuale.
 Per ogni macchina virtuale sono necessari dei dati aggiuntivi:
 \begin{itemize}
-    \item Interrupt Remapping Table (IRT)
-    \item Posted Interrupt Descriptor (PID)
+    \item \textbf{Interrupt Remapping Table (IRT)}
+    \item \textbf{Posted Interrupt Descriptor (PID)}: contiene le informazioni sullo stato della VM e salva le informazioni sulle notifiche di interruzioni. Contiene tutte le strutture richieste per implementare il meccanimso di posted interrupt. Ha a sua volta ha i seguenti campi:
+    \begin{itemize}
+        \item \textit{Posted Interrupt Request (PIR)}: in cui si trovano le interruzioni posticipate.
+        \item \textit{Suppress Notification (SN)}: flag che determina se il controller dopo la posticipazione dell'interruzione nel PIR deve notificare anche la CPU (SN=0) o no (SN=1).
+        \item \textit{Notification Vector (NV)}: contiene l'attuale vettore di interruzione per notificare l'interruzione alla VCPU dell VM.
+    \end{itemize}
 \end{itemize}
 L’IRT ha un’entrata per ogni possibile INT, ciascuna delle quali mappa la richiesta ad un \textit{vettore di interruzione}\footnotemark  di una CPU o un PID. Quando arriva un segnale di INT la tabella IRT decide se verrà gestita da un vettore di interruzione oppure da un PID (in caso sia abilitato il meccanismo delle interruzioni posticipate).
 
@@ -2605,12 +2610,26 @@ Svantaggi:
     \item abbiamo uno 'stato' che può variare nel tempo portando a bug ('state go to hell' cit).
 \end{itemize}
 
-\paragraph{Generazione e moltiplicazione di matrici}
-Problema: dato un certo input di grandezza N, generare un output di grandezza N x N (esempio contare le coppie di parole (bigram) in un documento). Due possibili soluzioni:
+\subsection{Pairs vs Stripes}
+Due possibili design pattern per risolvere il problema del \textit{bigram count} ovvero contare quante volte due parole si ripetono consecutivamente in un documento.
 \begin{itemize}
-    \item \textbf{Pairs:} generare $O(N^2)$ dati in spazio costante O(1).
-    \item \textbf{Stripes:} generare O(N) dati occupando una quantità di spazio lineare O(N).  
+    \item \textbf{Pairs:} generare $O(N^2)$ dati in spazio costante O(1). Nel mapper emettiamo coppie di parole adiacenti (chiave) e conteggio=1 (valore). Nel reducer aggreghiamo per chiave e sommiamo i vari 1 fra loro.
+    \item \textbf{Stripes:} generare O(N) dati occupando una quantità di spazio lineare O(N). Per ogni parola costruisco un \texttt{AssociativeArray} contenente le parole adiacenti ed il numero di volte che compaiono. Nel mapper emetto la parola in questione (chiave) e il suo array associativo (valore). Il reducer avrà una serie di \texttt{AssociativeArray} per ogni parola e dovrà semplicemente fare le somme dei valori.
 \end{itemize}
+Vediamo un semplice esempio. Supponiamo di avere un testo in cui le seguenti parole co-occorrono insieme alla parola \textit{ant}:\\
+
+"\textit{go to the ant thou sluggard consider her ways and be wise
+fool we'll set thee to school to an ant to teach thee}"\\ \\
+Con l'approccio \textbf{pairs} otterremo:\\ \\
+    \texttt{(ant, an)       1\\
+    (ant, and)      1\\
+    (ant, teach)    1\\
+    (ant, to)       3\\
+    (ant, thou)     1\\
+    (ant, sluggard) 1\\
+    (ant, the)      2}\\ \\
+Con l'approccio \textbf{stripes} otterremo:\\ \\
+\texttt{ant     {thou=1, and=1, an=1, to=3, sluggard=1, the=2, teach=1}}\\ \\
 Ci serve un trade-off tra numero di elementi generati (traffico di rete) e spazio per memorizzare i dati intermedi in locale (memoria o disco).
 \begin{figure}[H]
     \centering
